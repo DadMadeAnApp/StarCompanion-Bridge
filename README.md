@@ -1,6 +1,6 @@
 # StarCompanion Desktop Bridge
 
-Receives commands from the StarCompanion iOS app over your local network and injects keystrokes into Star Citizen.
+Receives commands from the StarCompanion iOS and Android app over your local network and injects keystrokes into Star Citizen.
 
 ---
 
