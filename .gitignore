@@ -1,0 +1,18 @@
+# TLS material and pairing secret — never commit these
+*.pem
+bridge_token.txt
+
+# Local opt-out of authentication — must never be committed, or a clone
+# would silently start with auth disabled
+INSECURE_NO_AUTH
+
+# Build output
+build/
+dist/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/

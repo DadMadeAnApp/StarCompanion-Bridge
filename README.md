@@ -4,6 +4,101 @@ Receives commands from the StarCompanion iOS and Android app over your local net
 
 ---
 
+## Pairing / security
+
+The bridge requires a pairing token to prevent anyone on your network from injecting keystrokes into your PC.
+
+**First launch**: The bridge generates a token and saves it to `bridge_token.txt` next to the script or exe. The token is printed in the startup banner. Enter it in the StarCompanion app alongside the IP address.
+
+**Token delivery**: The app can supply the token in two ways:
+- As an HTTP header: `Authorization: Bearer <token>`
+- As a query string on the WebSocket URL: `?token=<token>`
+
+If neither is present, the bridge waits up to 10 seconds for a first message of the form `{"type":"auth","token":"..."}`.
+
+**Authentication flow**: On success, the server replies `{"type":"auth","ok":true}`. On failure, it replies `{"type":"auth","ok":false}` and closes the connection with code 4401.
+
+**Disabling auth** (not recommended). Any one of these works:
+
+1. Command-line flag: `python bridge_server.py --insecure-no-auth` (or `--no-auth`)
+2. Environment variable: set `STARCOMPANION_INSECURE_NO_AUTH=1`
+3. **Sentinel file** — create an empty file named `INSECURE_NO_AUTH` (no extension)
+   next to the script or exe. This is the only method that works when you launch
+   the bridge by double-clicking, since that passes no arguments. Delete the file
+   to re-enable auth.
+
+Confirm it took effect: the startup banner reads `*** AUTH DISABLED ***` instead
+of printing a pairing token. If you still see a token, the setting didn't apply.
+
+This allows anyone on your network to inject keystrokes into your PC. Only use it
+on a trusted network, and only as a stopgap until the app supports pairing.
+
+**Secrets**: `bridge_token.txt`, `bridge_key.pem`, and `bridge_cert.pem` are gitignored — they are cryptographic material and should never be committed or shared.
+
+**Certificate pinning**: The startup banner prints your certificate's SHA-256 fingerprint. Clients that want to verify the server identity can pin this value.
+
+---
+
+## Message protocol
+
+All communication is JSON. The bridge acknowledges every message with a reply.
+
+**Keyboard command**:
+```json
+{
+  "type": "command",
+  "action": "<action name>",
+  "key": "<key name>",
+  "hold": <optional seconds, clamped to max 10>,
+  "id": <optional request ID>
+}
+```
+
+**Mouse action**:
+```json
+{
+  "type": "mouse",
+  "action": "click" | "alt_click" | "scroll_up" | "scroll_down",
+  "button": "left" | "right" | "middle",
+  "amount": <1–10, optional, scroll only>,
+  "id": <optional request ID>
+}
+```
+
+**Ping** (for keepalive):
+```json
+{
+  "type": "ping"
+}
+```
+
+**Acknowledgement** (reply to any message):
+```json
+{
+  "type": "ack",
+  "ok": true | false,
+  "id": <echoed if present in request>,
+  "error": "<error message if ok=false>"
+}
+```
+
+**Acks are opt-in.** The server replies *only* to messages that include an `id`
+field. Clients that don't send one receive no inbound frames at all, exactly as
+with older bridge versions. Send an `id` on every message to get error reporting —
+this is how a key name that isn't recognized surfaces as an error rather than
+failing silently.
+
+**Rate limiting**: Max 4 concurrent connections, 100 messages per second per connection, 4096 bytes per message.
+
+**Idle connections**: The bridge sends a WebSocket ping every 20 seconds to keep
+NAT and router mappings alive, but it will **never close a connection for failing
+to answer one**. A phone that is backgrounded, throttled, or asleep stays
+connected. When the 4-connection limit is reached, the oldest connection is
+dropped to make room for the new one, so a reconnecting phone can never be locked
+out by its own stale sockets.
+
+---
+
 ## Running the script directly
 
 Requires Python 3.10 or later — download from [python.org](https://www.python.org/downloads/).
@@ -12,13 +107,22 @@ Requires Python 3.10 or later — download from [python.org](https://www.python.
 python bridge_server.py
 ```
 
-Dependencies (`websockets`, `pynput`) install automatically on first launch.
+Dependencies (`websockets`, `pynput`, `cryptography`) install automatically on first launch.
+
+Options:
+
+```
+--insecure-no-auth   skip the pairing token (see above); alias --no-auth
+--port N             listen on a different port (default 8765)
+```
 
 ---
 
 ## Building a standalone .exe
 
-Do this once on your Windows PC. The result is a single `bridge_server.exe` that runs on any Windows machine with no Python required.
+Do this once on your Windows PC. The result is a single executable that runs on any Windows machine with no Python required.
+
+The quickest route is to run `build_exe.bat`, which installs the dependencies and produces `dist\StarCompanionBridge.exe`. The manual steps below do the same thing.
 
 ### 1. Install PyInstaller
 
@@ -59,7 +163,7 @@ The first time you run the exe, Windows may show a firewall prompt. Click **Allo
 ## Usage
 
 1. Run `bridge_server.exe` (or the Python script)
-2. The window shows your local IP address — enter it in the StarCompanion app
+2. The startup banner shows one or more local IP addresses. If there are multiple (due to VPN, Hyper-V, or WSL adapters), try the first one. Enter it in the StarCompanion app along with the pairing token.
 3. Make sure **Star Citizen is the active/focused window** before tapping controls
 4. Tap **Connect** in the app → Flight tab
 
@@ -69,10 +173,20 @@ The first time you run the exe, Windows may show a firewall prompt. Click **Allo
 
 Keybinds are set in the **StarCompanion app** under Flight → Edit Keybinds. No changes to the bridge are needed. The app sends the key with every command, so the bridge just injects whatever it receives.
 
-Supported key names: single characters (`a`–`z`, `0`–`9`, `\`, etc.) or named specials:
+**Single characters**: Any letter (`a`–`z`), digit (`0`–`9`), or punctuation (`\`, `-`, `=`, `[`, `]`, `;`, `'`, `,`, `.`, `/`, `` ` ``). Punctuation is resolved through the active Windows keyboard layout, so it works correctly even on non-US keyboard layouts.
 
+**Named special keys**:
 ```
 F1–F12   CAPS   ESC   TAB   SPACE   ENTER   BACKSPACE
-DELETE   HOME   END   PAGEUP   PAGEDOWN
+DELETE   INSERT   HOME   END   PAGEUP   PAGEDOWN
 UP   DOWN   LEFT   RIGHT
+NUM_LOCK   SCROLL_LOCK   PAUSE   PRINT_SCREEN
+```
+
+**Modifier combinations**: Use `MOD+KEY` notation (e.g. `ALT+C`). Supported modifiers:
+```
+ALT, LALT, RALT
+CTRL, LCTRL, RCTRL
+SHIFT, LSHIFT, RSHIFT
+WIN, META
 ```
