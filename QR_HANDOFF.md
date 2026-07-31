@@ -37,7 +37,7 @@ starcompanion://pair?v=2&h=192.168.1.42&h=10.0.0.4&p=8765&t=<token>&fp=<fingerpr
 | `v` | no | Payload version, currently `2`. |
 | `h` | **yes** | Candidate host — one per LAN IPv4 the bridge detected. |
 | `p` | no | Port. |
-| `t` | no | Pairing token. **Absent when the bridge runs with auth disabled.** |
+| `t` | no | Pairing token. Always present. |
 | `fp` | no | Certificate SHA-256, base64url, no padding (43 chars). |
 
 Typical length is ~130 characters, which produces a version 6 symbol (45×45
@@ -63,11 +63,10 @@ to the full list when it fails — the user's DHCP lease will eventually move.
 Do not present the user a list to choose from. Guessing which IP is reachable is
 the exact problem the QR exists to eliminate.
 
-**`t` — may be absent.** The bridge can be run with authentication disabled
-(`--insecure-no-auth`, an env var, or an `INSECURE_NO_AUTH` sentinel file). In
-that mode there is no token to send. Connect without one, but surface a clear
-warning — an unauthenticated bridge lets anyone on the network inject keystrokes
-into that PC, and the user may not realize the mode is active.
+**`t` — always present.** The pairing token is mandatory on the bridge side and
+cannot be turned off, so a payload without `t` did not come from a current
+bridge. Treat it as malformed and refuse it rather than falling back to an
+unauthenticated connection.
 
 **`fp` — base64url, not the hex in the banner.** The startup banner prints the
 colon-separated hex form for humans; the QR carries the same 32 bytes as
@@ -146,7 +145,7 @@ See `HANDOFF.md` §5 for the connection sequence and §4 for the TLS details.
 
 - [ ] Multi-IP payload: all `h` values parsed, unreachable ones skipped, reachable one connects.
 - [ ] Reachable address listed **last** — catches a last-value-wins parse.
-- [ ] Payload with no `t` (bridge running with auth disabled): connects, warns.
+- [ ] Payload with no `t`: refused as malformed, no unauthenticated fallback.
 - [ ] Payload with an unrecognized `v`: refused with an update prompt.
 - [ ] Fingerprint pinning: matching cert connects; changed cert prompts re-pair.
 - [ ] Saved host stops working: app falls back to the other candidates.

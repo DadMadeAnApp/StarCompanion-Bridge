@@ -22,20 +22,15 @@ If neither is present, the bridge waits up to 10 seconds for a first message of 
 
 **Authentication flow**: On success, the server replies `{"type":"auth","ok":true}`. On failure, it replies `{"type":"auth","ok":false}` and closes the connection with code 4401.
 
-**Disabling auth** (not recommended). Any one of these works:
+**Auth cannot be disabled.** The token is always required. The three former
+opt-outs — the `--insecure-no-auth` / `--no-auth` flag, the
+`STARCOMPANION_INSECURE_NO_AUTH` environment variable, and the `INSECURE_NO_AUTH`
+sentinel file — now refuse to start and print an error instead of quietly
+launching an unauthenticated bridge. Delete the sentinel file if you have one.
 
-1. Command-line flag: `python bridge_server.py --insecure-no-auth` (or `--no-auth`)
-2. Environment variable: set `STARCOMPANION_INSECURE_NO_AUTH=1`
-3. **Sentinel file** — create an empty file named `INSECURE_NO_AUTH` (no extension)
-   next to the script or exe. This is the only method that works when you launch
-   the bridge by double-clicking, since that passes no arguments. Delete the file
-   to re-enable auth.
-
-Confirm it took effect: the startup banner reads `*** AUTH DISABLED ***` instead
-of printing a pairing token. If you still see a token, the setting didn't apply.
-
-This allows anyone on your network to inject keystrokes into your PC. Only use it
-on a trusted network, and only as a stopgap until the app supports pairing.
+They existed as a stopgap while the app lacked pairing support. With QR pairing
+there is no longer a reason to run a bridge that lets anyone on the network
+inject keystrokes into your PC.
 
 **Secrets**: `bridge_token.txt`, `bridge_key.pem`, and `bridge_cert.pem` are gitignored — they are cryptographic material and should never be committed or shared.
 
@@ -116,7 +111,6 @@ Dependencies (`websockets`, `pynput`, `cryptography`, `qrcode`) install automati
 Options:
 
 ```
---insecure-no-auth   skip the pairing token (see above); alias --no-auth
 --port N             listen on a different port (default 8765)
 ```
 

@@ -2,8 +2,8 @@
 *.pem
 bridge_token.txt
 
-# Local opt-out of authentication — must never be committed, or a clone
-# would silently start with auth disabled
+# Retired opt-out of authentication. The bridge now refuses to start when this
+# file is present; keep it ignored so a leftover copy is never committed.
 INSECURE_NO_AUTH
 
 # Build output

@@ -88,7 +88,7 @@ starcompanion://pair?v=2&h=192.168.1.42&h=10.0.0.4&p=8765&t=<token>&fp=<fingerpr
 | `v` | no | Payload version, currently `2`. **Reject payloads with an unknown `v`** and tell the user to update the app. |
 | `h` | **yes** | Candidate host. One per detected LAN IPv4 — see below. |
 | `p` | no | Port. Don't assume 8765; the bridge takes `--port`. |
-| `t` | no | Pairing token. **Absent when the bridge is running with auth disabled** — connect without a token in that case, and warn the user that the link is unauthenticated. |
+| `t` | no | Pairing token. Always present — the bridge cannot run without one. Treat a payload with no `t` as malformed. |
 | `fp` | no | Cert SHA-256, **base64url without padding** (43 chars) — not the colon-hex form shown in the banner. Decode to 32 raw bytes to compare against the presented cert. |
 
 **`h` repeats and the order is a hint, not an answer.** The bridge cannot tell
@@ -321,26 +321,22 @@ commands from being read (they still execute in order behind a lock).
 
 ## 9. Migration strategy
 
-The desktop side can run with auth disabled, restoring the old no-token behavior —
-via the `--insecure-no-auth` flag, the `STARCOMPANION_INSECURE_NO_AUTH=1`
-environment variable, or an empty `INSECURE_NO_AUTH` file next to the exe (the
-only one that works when the bridge is double-clicked). Note that acks are opt-in
-(§6), so a pre-v2 client that sends no `id` talks to the new bridge exactly as it
-did to the old one. That gives you two options:
+**The token is mandatory — there is no way to run the bridge without it.** The
+old opt-outs (`--insecure-no-auth`, `STARCOMPANION_INSECURE_NO_AUTH=1`, and the
+`INSECURE_NO_AUTH` sentinel file) now refuse to start rather than launching an
+unauthenticated bridge, so "ship the bridge first and tell users to disable auth"
+is no longer an option. Note that acks are opt-in (§6), so a pre-v2 client that
+sends no `id` is otherwise unaffected.
 
-- **Ship the bridge first.** Tell existing users to run with
-  `--insecure-no-auth` until the app update lands. Simple, but every user on that
-  flag is running an unauthenticated remote-keystroke server on their LAN. Keep
-  the window short and say so plainly in the release notes.
-- **Ship both together.** Cleaner. The app can be made to work with either
-  version: if the connection closes with `4401`, show the "enter pairing token"
-  prompt; if it connects and works without one, the user is on an old bridge — a
-  soft "your desktop bridge is out of date" nudge is a nice touch.
+That leaves one path: **ship both together.** The app can be made to work with
+either version — if the connection closes with `4401`, show the pairing prompt;
+if it connects and works without a token, the user is on an old bridge, and a
+soft "your desktop bridge is out of date" nudge is a nice touch.
 
-The second is what I'd recommend. Version negotiation isn't implemented (there's
-no version field in the protocol), so behavior-sniffing via the `4401` close code
-is the available mechanism. If you'd rather have an explicit version handshake,
-that's a small desktop-side addition — say the word.
+Version negotiation isn't implemented (there's no version field in the protocol),
+so behavior-sniffing via the `4401` close code is the available mechanism. If
+you'd rather have an explicit version handshake, that's a small desktop-side
+addition — say the word.
 
 ---
 
@@ -355,7 +351,7 @@ that's a small desktop-side addition — say the word.
 - [ ] Kill the app mid-hold → key does **not** stay stuck down in-game
 - [ ] Punctuation keybind (`\`, `[`, `-`) actually triggers the right in-game action
 - [ ] Desktop IP changes (toggle VPN) → cert reissues, app re-pairs cleanly
-- [ ] Old bridge with `--insecure-no-auth` → app still connects (if you do §9 option 2)
+- [ ] Old (pre-token) bridge → app still connects, shows the out-of-date nudge (§9)
 
 ---
 

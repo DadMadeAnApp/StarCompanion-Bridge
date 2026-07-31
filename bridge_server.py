@@ -6,9 +6,10 @@ Dependencies install automatically on first launch.
 
 Keybinds are configured in the StarCompanion app — no editing needed here.
 
-The bridge injects keystrokes into whatever window has focus, so it requires
-the app to authenticate with the pairing token printed at startup.
-Run with --insecure-no-auth to disable that (not recommended).
+The bridge injects keystrokes into whatever window has focus, so it always
+requires the app to authenticate with the pairing token printed at startup.
+There is no way to turn that off. Scan the QR below the startup banner to
+pair without typing the token by hand.
 """
 
 # ── Bootstrap: install missing deps, then re-exec so they're importable ───────
@@ -713,10 +714,10 @@ async def _run_command(ws, msg: dict) -> None:
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
-async def main(require_auth: bool, port: int = PORT) -> None:
+async def main(port: int = PORT) -> None:
     ips = _local_ips()
     ssl_ctx, cert_path = _ensure_ssl_context(ips)
-    token = _ensure_token() if require_auth else None
+    token = _ensure_token()
 
     # Bind before printing anything, so a failure to claim the port surfaces
     # as an error instead of appearing after a "ready" banner.
@@ -736,10 +737,7 @@ async def main(require_auth: bool, port: int = PORT) -> None:
         for ip in ips:
             print(f"      {ip}")
     print(f"  Port: {port}")
-    if token:
-        print(f"  Pairing token: {token}")
-    else:
-        print("  *** AUTH DISABLED — anyone on this network can control this PC ***")
+    print(f"  Pairing token: {token}")
     print(f"  Cert SHA-256: {_cert_fingerprint(cert_path)}")
     print("=" * 60)
     print()
@@ -748,8 +746,6 @@ async def main(require_auth: bool, port: int = PORT) -> None:
     if _print_qr(uri):
         print()
         print("  Scan this in the StarCompanion app to pair.")
-        if not token:
-            print("  *** This QR pairs without a token — anyone who scans it gets in ***")
     else:
         # No QR (piped output, or a console without ANSI support) — the URI
         # still pairs if the app can take it by paste or deep link.
@@ -761,18 +757,19 @@ async def main(require_auth: bool, port: int = PORT) -> None:
         await asyncio.Future()
 
 
-def _parse_options() -> tuple[bool, int]:
-    """Returns (auth_disabled, port).
+def _parse_options() -> int:
+    """Returns the port to listen on.
 
-    Auth can be turned off three ways, because a command-line flag isn't always
-    reachable: double-clicking a .py or .exe passes no arguments, and a broken
-    Windows file association drops them silently.
+    The pairing token is mandatory. The old opt-outs (--insecure-no-auth, the
+    STARCOMPANION_INSECURE_NO_AUTH env var, and the INSECURE_NO_AUTH sentinel
+    file) are still recognised so an existing setup gets a clear message
+    instead of silently starting with auth it no longer has.
     """
     parser = argparse.ArgumentParser(description="StarCompanion Desktop Bridge")
     parser.add_argument(
         "--insecure-no-auth", "--no-auth", action="store_true",
         dest="insecure_no_auth",
-        help="accept any client on the network without a pairing token",
+        help=argparse.SUPPRESS,  # retired — always errors out
     )
     parser.add_argument(
         "--port", type=int, default=PORT,
@@ -784,27 +781,35 @@ def _parse_options() -> tuple[bool, int]:
     if unknown:
         print(f"[warn] ignoring unrecognised argument(s): {' '.join(unknown)}")
 
-    disabled = False
+    # Loudly reject the retired opt-outs rather than ignoring them: someone
+    # using one believes the bridge is unauthenticated, and silently starting
+    # with a token would look like the bridge is broken.
+    sentinel = _app_dir() / "INSECURE_NO_AUTH"
     if args.insecure_no_auth:
-        disabled = True
-    elif os.environ.get("STARCOMPANION_INSECURE_NO_AUTH", "").strip() not in ("", "0"):
-        print("[setup] auth disabled via STARCOMPANION_INSECURE_NO_AUTH")
-        disabled = True
-    else:
-        # Sentinel file next to the script/exe — the only option that works
-        # when the bridge is launched by double-clicking.
-        sentinel = _app_dir() / "INSECURE_NO_AUTH"
-        if sentinel.exists():
-            print(f"[setup] auth disabled — delete {sentinel} to re-enable")
-            disabled = True
+        _refuse_no_auth("--insecure-no-auth is no longer supported.")
+    if os.environ.get("STARCOMPANION_INSECURE_NO_AUTH", "").strip() not in ("", "0"):
+        _refuse_no_auth("STARCOMPANION_INSECURE_NO_AUTH is no longer supported.")
+    if sentinel.exists():
+        _refuse_no_auth(f"The INSECURE_NO_AUTH file is no longer supported.\nDelete it: {sentinel}")
 
-    return disabled, args.port
+    return args.port
+
+
+def _refuse_no_auth(detail: str) -> None:
+    print(f"\nERROR: {detail}")
+    print("The pairing token is always required. Scan the QR in the startup")
+    print("banner to pair without typing it.")
+    # The pause is for a double-clicked window; suppress EOFError so a piped
+    # or headless run exits cleanly instead of dumping a traceback.
+    with contextlib.suppress(EOFError):
+        input("\nPress Enter to close...")
+    sys.exit(1)
 
 
 if __name__ == "__main__":
-    _no_auth, _port = _parse_options()
+    _port = _parse_options()
     try:
-        asyncio.run(main(require_auth=not _no_auth, port=_port))
+        asyncio.run(main(port=_port))
     except KeyboardInterrupt:
         print("\nBridge stopped.")
     except OSError as e:
