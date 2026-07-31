@@ -8,7 +8,11 @@ Receives commands from the StarCompanion iOS and Android app over your local net
 
 The bridge requires a pairing token to prevent anyone on your network from injecting keystrokes into your PC.
 
-**First launch**: The bridge generates a token and saves it to `bridge_token.txt` next to the script or exe. The token is printed in the startup banner. Enter it in the StarCompanion app alongside the IP address.
+**First launch**: The bridge generates a token and saves it to `bridge_token.txt` next to the script or exe. The token is printed in the startup banner.
+
+**Pairing by QR (easiest)**: Below the banner the bridge prints a QR code. Scan it in the StarCompanion app and it fills in the IP, port, token, and certificate fingerprint in one step — no typing. If the console can't draw the QR (output redirected to a file, or a terminal without ANSI support), the bridge prints the same `starcompanion://pair?…` link as text, which the app also accepts.
+
+**Pairing by hand**: enter the IP address, port, and token from the banner in the app.
 
 **Token delivery**: The app can supply the token in two ways:
 - As an HTTP header: `Authorization: Bearer <token>`
@@ -107,7 +111,7 @@ Requires Python 3.10 or later — download from [python.org](https://www.python.
 python bridge_server.py
 ```
 
-Dependencies (`websockets`, `pynput`, `cryptography`) install automatically on first launch.
+Dependencies (`websockets`, `pynput`, `cryptography`, `qrcode`) install automatically on first launch.
 
 Options:
 

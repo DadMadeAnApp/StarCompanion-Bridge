@@ -65,12 +65,49 @@ Three things the app may need to collect:
 The token is stable, so the app should **persist it** alongside the saved IP and
 never prompt again unless auth fails.
 
-> **Strongly consider a QR path.** Typing a 24-character token on a phone is
-> miserable. If you add a "Show QR" affordance to the desktop side later, encode
-> `starcompanion://pair?host=<ip>&port=8765&token=<token>&fp=<sha256>` and have
-> the app scan it. The bridge doesn't emit a QR today — that's a follow-up on the
-> desktop side, not a blocker for this work. Design the settings screen so a
-> scanned payload can populate all fields.
+The banner is followed by a **pairing QR** (§3a) that carries all three values,
+so hand-entry should be the fallback path, not the primary one.
+
+---
+
+## 3a. Pairing QR
+
+The bridge always prints a QR below the banner (`_print_qr`, `bridge_server.py`).
+Scanning it should populate every connection field in one step. **`QR_HANDOFF.md`
+covers the app-side work in full** — parsing, scanning, fallbacks, and a test
+checklist; the summary below is enough if you only need the payload shape.
+
+Encoded payload:
+
+```
+starcompanion://pair?v=2&h=192.168.1.42&h=10.0.0.4&p=8765&t=<token>&fp=<fingerprint>
+```
+
+| Param | Repeats? | Meaning |
+|---|---|---|
+| `v` | no | Payload version, currently `2`. **Reject payloads with an unknown `v`** and tell the user to update the app. |
+| `h` | **yes** | Candidate host. One per detected LAN IPv4 — see below. |
+| `p` | no | Port. Don't assume 8765; the bridge takes `--port`. |
+| `t` | no | Pairing token. **Absent when the bridge is running with auth disabled** — connect without a token in that case, and warn the user that the link is unauthenticated. |
+| `fp` | no | Cert SHA-256, **base64url without padding** (43 chars) — not the colon-hex form shown in the banner. Decode to 32 raw bytes to compare against the presented cert. |
+
+**`h` repeats and the order is a hint, not an answer.** The bridge cannot tell
+which of its addresses the phone can actually reach, so it emits all of them.
+Race them — attempt each concurrently (or in listed order with a short timeout)
+and keep the first that completes a TLS handshake and auth. Persist the winner
+and try it first next time, falling back to the full list on failure. Do not
+show the user a picker; that's the problem the QR exists to remove.
+
+Parse with a standard query parser that preserves duplicate keys. Note that a
+naive "last value wins" parse silently discards every host but the last one,
+which usually leaves the app pointed at a VPN or Hyper-V address that can't be
+reached from the phone.
+
+**Also keep manual entry.** A phone camera can't always read a monitor (glare,
+scaling, a bridge running headless over SSH). When the console can't render —
+output is piped, or the terminal lacks ANSI support — the bridge prints the same
+URI as text instead, so accepting a pasted `starcompanion://` link covers that
+case cheaply.
 
 ---
 

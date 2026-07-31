@@ -14,7 +14,7 @@ Run with --insecure-no-auth to disable that (not recommended).
 # ── Bootstrap: install missing deps, then re-exec so they're importable ───────
 import subprocess, sys, os
 
-_DEPS = ["websockets>=12.0", "pynput>=1.7", "cryptography>=41.0"]
+_DEPS = ["websockets>=12.0", "pynput>=1.7", "cryptography>=41.0", "qrcode>=7.4"]
 _RETRY_FLAG = "STARCOMPANION_BRIDGE_BOOTSTRAPPED"
 
 def _is_missing(module: str) -> bool:
@@ -53,6 +53,7 @@ if not getattr(sys, "frozen", False):
 # ── Imports ────────────────────────────────────────────────────────────────────
 import argparse
 import asyncio
+import base64
 import contextlib
 import datetime
 import hmac
@@ -311,6 +312,99 @@ def _cert_fingerprint(cert_path: Path) -> str:
     from cryptography.hazmat.primitives import hashes
     cert = x509.load_pem_x509_certificate(cert_path.read_bytes())
     return cert.fingerprint(hashes.SHA256()).hex(":").upper()
+
+
+def _cert_fingerprint_b64(cert_path: Path) -> str:
+    """Same SHA-256 as _cert_fingerprint, base64url-encoded.
+
+    The colon-hex form is 95 characters; this is 43, which keeps the pairing
+    QR two versions smaller and correspondingly easier to scan.
+    """
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes
+    cert = x509.load_pem_x509_certificate(cert_path.read_bytes())
+    digest = cert.fingerprint(hashes.SHA256())
+    return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+
+
+# ── Pairing QR ─────────────────────────────────────────────────────────────────
+PAIRING_URI_VERSION = "2"
+
+
+def _pairing_uri(ips: list[str], port: int, token: str | None, fingerprint: str) -> str:
+    """Everything the app needs to connect, as one scannable URI.
+
+    Every candidate address is included: _local_ips() can return several on a
+    machine with VPN/Hyper-V/WSL adapters and the bridge cannot tell which one
+    the phone can reach, so the app races them rather than the user guessing.
+    """
+    params = [("v", PAIRING_URI_VERSION)]
+    params += [("h", ip) for ip in ips]
+    params.append(("p", str(port)))
+    if token:
+        params.append(("t", token))
+    params.append(("fp", fingerprint))
+    from urllib.parse import urlencode
+    return "starcompanion://pair?" + urlencode(params)
+
+
+def _enable_vt() -> bool:
+    """Turn on ANSI escape handling in a Windows console. True if usable."""
+    if os.name != "nt":
+        return sys.stdout.isatty()
+    if not sys.stdout.isatty():
+        return False
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+        mode = ctypes.c_uint32()
+        if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+            return False
+        # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        return bool(kernel32.SetConsoleMode(handle, mode.value | 0x0004))
+    except Exception:
+        return False
+
+
+def _print_qr(data: str) -> bool:
+    """Render a QR to the console. False if it could not be drawn.
+
+    Drawn as explicit black-on-white with ANSI colours rather than the
+    terminal's own palette: readers need dark modules on a light background,
+    and both cmd.exe and Windows Terminal default to a dark scheme, which
+    would otherwise produce an inverted symbol that many readers reject.
+    Two rows of modules share one text row via half-block characters, because
+    a character cell is about twice as tall as it is wide.
+    """
+    try:
+        import qrcode
+    except ImportError:
+        return False
+    if not _enable_vt():
+        return False
+
+    try:
+        # Level L: a screen is a clean scanning surface, and the lower
+        # redundancy keeps the symbol small enough to fit an 80x30 console.
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_L, border=2)
+        qr.add_data(data)
+        qr.make(fit=True)
+        matrix = qr.get_matrix()
+    except Exception:
+        return False
+
+    WHITE_BG, BLACK_FG, RESET = "\033[47m", "\033[30m", "\033[0m"
+    for y in range(0, len(matrix), 2):
+        upper = matrix[y]
+        lower = matrix[y + 1] if y + 1 < len(matrix) else [False] * len(upper)
+        cells = []
+        for up, low in zip(upper, lower):
+            # A True module is dark; the fg is black and the bg is white, so
+            # the half-block covers whichever half needs to be dark.
+            cells.append("█" if up and low else "▀" if up else "▄" if low else " ")
+        print(f"{WHITE_BG}{BLACK_FG}{''.join(cells)}{RESET}")
+    return True
 
 
 def _ensure_ssl_context(ips: list[str]) -> tuple[ssl.SSLContext, Path]:
@@ -648,6 +742,18 @@ async def main(require_auth: bool, port: int = PORT) -> None:
         print("  *** AUTH DISABLED — anyone on this network can control this PC ***")
     print(f"  Cert SHA-256: {_cert_fingerprint(cert_path)}")
     print("=" * 60)
+    print()
+
+    uri = _pairing_uri(ips, port, token, _cert_fingerprint_b64(cert_path))
+    if _print_qr(uri):
+        print()
+        print("  Scan this in the StarCompanion app to pair.")
+        if not token:
+            print("  *** This QR pairs without a token — anyone who scans it gets in ***")
+    else:
+        # No QR (piped output, or a console without ANSI support) — the URI
+        # still pairs if the app can take it by paste or deep link.
+        print(f"  Pairing link: {uri}")
     print()
     logging.info("Waiting for app to connect... (Star Citizen must be the active window)")
 
