@@ -120,36 +120,21 @@ Options:
 
 Do this once on your Windows PC. The result is a single executable that runs on any Windows machine with no Python required.
 
-The quickest route is to run `build_exe.bat`, which installs the dependencies and produces `dist\StarCompanionBridge.exe`. The manual steps below do the same thing.
+### 1. Build
 
-### 1. Install PyInstaller
+Double-click `build_exe.bat`, or run it from a terminal in this folder. It installs PyInstaller and the runtime dependencies, then builds the exe.
 
-```
-pip install pyinstaller
-```
-
-### 2. Build
-
-Run this from the `Bridge` folder:
+### 2. Find the exe
 
 ```
-pyinstaller --onefile --console bridge_server.py
+dist\StarCompanionBridge.exe
 ```
 
-`--onefile` bundles everything into a single executable.  
-`--console` keeps the terminal window open so you can see the IP address and log output.
+Move it anywhere you like — it has no external dependencies.
 
-### 3. Find the exe
+Build it with `build_exe.bat` rather than a bare `pyinstaller` invocation: the script passes `--hidden-import=pynput.keyboard._win32` and `--hidden-import=pynput.mouse._win32`, which PyInstaller cannot detect on its own. Without them the exe builds cleanly and then fails at runtime the moment it tries to inject a keystroke.
 
-PyInstaller creates a `dist` folder in the same directory. Your executable is at:
-
-```
-Bridge\dist\bridge_server.exe
-```
-
-You can move `bridge_server.exe` anywhere — it has no external dependencies.
-
-### 4. Windows Firewall
+### 3. Windows Firewall
 
 The first time you run the exe, Windows may show a firewall prompt. Click **Allow access** to let the app connect over your local network. If you miss the prompt, add a rule manually:
 
@@ -160,7 +145,7 @@ The first time you run the exe, Windows may show a firewall prompt. Click **Allo
 
 ## Usage
 
-1. Run `bridge_server.exe` (or the Python script)
+1. Run `StarCompanionBridge.exe` (or the Python script)
 2. The startup banner shows one or more local IP addresses. If there are multiple (due to VPN, Hyper-V, or WSL adapters), try the first one. Enter it in the StarCompanion app along with the pairing token.
 3. Make sure **Star Citizen is the active/focused window** before tapping controls
 4. Tap **Connect** in the app → Flight tab
