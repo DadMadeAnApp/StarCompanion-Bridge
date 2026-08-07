@@ -141,6 +141,19 @@ _OEM_VK: dict[str, int] = {
 
 MOUSE_BUTTONS = {"left": Button.left, "right": Button.right, "middle": Button.middle}
 
+# Numeric-keypad virtual-key codes. These occupy their own VK range distinct
+# from the main keyboard row, and VkKeyScanW maps *characters* — it resolves
+# "0" and "+" to the main row, never to the keypad — so there is no fallback
+# path that can reach these keys. An explicit table is the only way in.
+# Star Citizen's Advanced Camera Controls default bindings are RAlt+Numpad n,
+# which is why the app needs to be able to send them at all.
+_NUMPAD_VKS: dict[str, int] = {
+    "NUM0": 0x60, "NUM1": 0x61, "NUM2": 0x62, "NUM3": 0x63, "NUM4": 0x64,
+    "NUM5": 0x65, "NUM6": 0x66, "NUM7": 0x67, "NUM8": 0x68, "NUM9": 0x69,
+    "NUMSTAR": 0x6A, "NUMPLUS": 0x6B, "NUMENTER": 0x0D,
+    "NUMMINUS": 0x6D, "NUMPERIOD": 0x6E, "NUMSLASH": 0x6F,
+}
+
 # ── Logging ─────────────────────────────────────────────────────────────────────
 # The Windows console defaults to cp1252, which raises on any non-ASCII text
 # in a log line. Force UTF-8 so logging can never crash on a stray character.
@@ -453,6 +466,11 @@ def _resolve(key_str: str):
     key_name = parts[-1]
     mods = [MODIFIER_KEYS[p] for p in parts[:-1] if p in MODIFIER_KEYS]
 
+    # Numpad names must resolve before SPECIAL_KEYS or the char/VkKeyScanW
+    # fallback below can ever see them — otherwise "NUMPLUS" would fall
+    # through to the main-row "+" (the exact bug this table exists to avoid).
+    if key_name in _NUMPAD_VKS:
+        return KeyCode(vk=_NUMPAD_VKS[key_name]), mods
     if key_name in SPECIAL_KEYS:
         return SPECIAL_KEYS[key_name], mods
     if len(key_name) == 1:

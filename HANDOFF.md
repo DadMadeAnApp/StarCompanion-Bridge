@@ -258,6 +258,14 @@ Unchanged format, wider coverage. `MOD+KEY`, uppercase-insensitive.
 `DELETE` `INSERT` `HOME` `END` `PAGEUP` `PAGEDOWN` `UP` `DOWN` `LEFT` `RIGHT`
 `NUM_LOCK` `SCROLL_LOCK` `PAUSE` `PRINT_SCREEN`.
 
+**Numeric keypad:** `NUM0`–`NUM9` `NUMPLUS` `NUMMINUS` `NUMSTAR` `NUMSLASH`
+`NUMENTER` `NUMPERIOD`. These target the numeric keypad specifically — the
+keypad occupies its own virtual-key range distinct from the main keyboard
+row, so this is the *only* way to reach it; a digit or `+`/`-` sent as a
+single character always resolves to the main row, never the keypad. Needed
+because Star Citizen's Advanced Camera Controls default bindings are
+`RALT+NUM0`…`RALT+NUM9`.
+
 **Single characters:** letters, digits, and punctuation.
 
 > ⚠️ **Punctuation bindings were broken before and now work.** The old bridge used
