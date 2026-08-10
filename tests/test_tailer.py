@@ -70,6 +70,49 @@ class TailerTests(unittest.TestCase):
         seen = self._collect(append, 1)
         self.assertIn("fresh session", seen[0])
 
+    def test_survives_the_quiet_flush_race(self):
+        """A wrapped notification whose two physical lines straddle a poll
+        tick must still arrive as one whole record, MissionId intact.
+
+        Regression for: watch() used to flush a buffered record on the FIRST
+        empty read, so a continuation landing just after that poll fired was
+        never joined — parse_notification then silently failed to match
+        (no MissionId on the truncated record) and the notification vanished.
+        """
+
+        async def run():
+            t = tailer.LogTailer(self.path, poll_interval=0.1)
+            seen = []
+
+            async def consume():
+                async for record in t.watch():
+                    seen.append(record)
+                    return
+
+            task = asyncio.ensure_future(consume())
+            await asyncio.sleep(0.05)
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    '<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> '
+                    'Added notification "You have joined channel \'Test Org\'.\n'
+                )
+            # Straddle one poll tick (comfortably less than the two-quiet-poll
+            # flush threshold) before the continuation lands.
+            await asyncio.sleep(0.12)
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    '" [2] to queue. New queue size: 1, '
+                    "MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: []\n"
+                )
+            await asyncio.wait_for(task, timeout=3)
+            return seen
+
+        seen = asyncio.run(run())
+        self.assertEqual(len(seen), 1)
+        self.assertIn("joined channel", seen[0])
+        self.assertIn("to queue", seen[0])
+        self.assertIn("MissionId: [00000000-0000-0000-0000-000000000000]", seen[0])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -53,11 +53,12 @@ class LogTailer:
 
     def _read_header(self) -> None:
         with contextlib.suppress(OSError):
-            with self.path.open("r", encoding="utf-8", errors="replace") as fh:
+            with self.path.open("rb") as fh:
                 for _ in range(20):
-                    line = fh.readline()
-                    if not line:
+                    raw = fh.readline()
+                    if not raw:
                         break
+                    line = raw.decode("utf-8", errors="replace")
                     build = parse_build(line)
                     if build:
                         self.game_build = build
@@ -74,31 +75,49 @@ class LogTailer:
         return (now - self._last_event) > STALE_AFTER_SECONDS
 
     async def watch(self) -> AsyncIterator[str]:
-        """Follow the file forever, yielding one assembled record at a time."""
+        """Follow the file forever, yielding one assembled record at a time.
+
+        Opened in binary mode and decoded by hand: `TextIOWrapper.tell()`
+        returns an opaque cookie, not a byte offset, which is not safe to
+        compare against `stat().st_size` (fragile with multi-byte UTF-8 or
+        CRLF — and Windows `Game.log` is exactly where CRLF shows up). A
+        binary handle's `tell()` is a true byte offset, so the rotation
+        size-shrink check is sound.
+        """
         self._last_event = time.monotonic()
-        fh = self.path.open("r", encoding="utf-8", errors="replace")
+        fh = self.path.open("rb")
         try:
             fh.seek(0, os.SEEK_END)
             inode = self.path.stat().st_ino
             pending: list[str] = []
+            quiet_polls = 0
 
             while True:
-                line = fh.readline()
-                if not line:
-                    # A record is only complete once the next one starts, so a
-                    # quiet file means the buffered record can be released.
-                    if pending:
+                raw = fh.readline()
+                if not raw:
+                    quiet_polls += 1
+                    # A wrapped record's continuation can land on the poll
+                    # right after the first physical line, so one quiet poll
+                    # is not enough to conclude the record is done — wait for
+                    # a second consecutive quiet poll before releasing it.
+                    # A busy log still flushes immediately (see below), so
+                    # only a record followed by silence pays this extra poll.
+                    if pending and quiet_polls >= 2:
                         yield "".join(pending).rstrip("\n")
                         pending = []
                     await asyncio.sleep(self.poll_interval)
                     if self._rotated(fh, inode):
                         fh.close()
-                        fh = self.path.open("r", encoding="utf-8", errors="replace")
+                        fh = self.path.open("rb")
                         inode = self.path.stat().st_ino
                         self._read_header()
+                        pending = []
+                        quiet_polls = 0
                     continue
 
+                quiet_polls = 0
                 self._last_event = time.monotonic()
+                line = raw.decode("utf-8", errors="replace")
                 if RECORD_START.match(line):
                     if pending:
                         yield "".join(pending).rstrip("\n")
@@ -115,6 +134,8 @@ class LogTailer:
         the size-shrink comparison (`st_size < fh.tell()`) is checked
         independently of the inode check — that alone catches an in-place
         truncation even when the inode looks unchanged or unavailable.
+        `fh` is a binary handle here, so `tell()` is a true byte offset and
+        the comparison against `st_size` (also bytes) is sound.
         """
         try:
             stat = self.path.stat()
