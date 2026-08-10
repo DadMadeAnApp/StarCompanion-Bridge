@@ -20,22 +20,48 @@ KEEP_TAGS = (
 CHATTER_TAGS = (
     "<InventoryManagementRequest>",
     "<OnDragInventoryItemModifyTarget>",
-    "<AttachmentReceived>",
 )
 HANDLE = "TestPilot"
 ACCOUNT = "100000000000"
 
 
-def redact(line: str) -> str:
-    line = re.sub(r"Player\[[^\]]+\]", f"Player[{HANDLE}]", line)
-    line = re.sub(r"\b\d{12}\b", ACCOUNT, line)
-    # UUIDs keep their shape so parsers still exercise the real format.
-    line = re.sub(
-        r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
-        lambda m: "0" * 8 + "-" + "0" * 4 + "-" + "0" * 4 + "-" + "0" * 4 + "-" + m.group(0)[-12:],
-        line,
-    )
-    return line
+def make_redact(uuid_map: dict) -> callable:
+    """Factory that returns a redact function with UUID mapping state."""
+    def redact(line: str) -> str:
+        # Redact player handle (in Player[...] and quoted contexts)
+        line = re.sub(r"Player\[[^\]]+\]", f"Player[{HANDLE}]", line)
+        line = re.sub(r"'MrDadpool'", f"'{HANDLE}'", line)
+
+        # Redact account ID: word-bounded 12-digit sequences
+        line = re.sub(r"\b\d{12}\b", ACCOUNT, line)
+
+        # Redact entity IDs: any run of 9+ digits (catches IDs in item names)
+        def redact_digits(m):
+            return "100000000000"[:len(m.group(0))]
+        line = re.sub(r"\d{9,}", redact_digits, line)
+
+        # Redact UUIDs with deterministic mapping (preserve format for parsers)
+        def redact_uuid(m):
+            uuid = m.group(0)
+            if uuid not in uuid_map:
+                uuid_map[uuid] = len(uuid_map)
+            n = uuid_map[uuid]
+            return f"00000000-0000-0000-0000-{n:012d}"
+        line = re.sub(
+            r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+            redact_uuid,
+            line,
+        )
+
+        # Redact org/channel names in notifications
+        line = re.sub(
+            r"(channel ['\"])[^'\"]+(['\"])",
+            r"\1Test Ship : TestOrg\2",
+            line,
+        )
+
+        return line
+    return redact
 
 
 def main(src: str, dest: str) -> None:
@@ -52,6 +78,11 @@ def main(src: str, dest: str) -> None:
         elif any(tag in line for tag in CHATTER_TAGS) and kept_chatter < 40:
             out.append(line)
             kept_chatter += 1
+
+    # Create the redact function with UUID mapping
+    uuid_map = {}
+    redact = make_redact(uuid_map)
+
     Path(dest).write_text("".join(redact(x) for x in out), encoding="utf-8")
     print(f"wrote {dest}: {len(out)} lines")
 
