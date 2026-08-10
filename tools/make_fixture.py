@@ -19,7 +19,6 @@ KEEP_TAGS = (
 )
 CHATTER_TAGS = (
     "<InventoryManagementRequest>",
-    "<OnDragInventoryItemModifyTarget>",
 )
 HANDLE = "TestPilot"
 ACCOUNT = "100000000000"
@@ -35,12 +34,8 @@ def make_redact(uuid_map: dict) -> callable:
         # Redact account ID: word-bounded 12-digit sequences
         line = re.sub(r"\b\d{12}\b", ACCOUNT, line)
 
-        # Redact entity IDs: any run of 9+ digits (catches IDs in item names)
-        def redact_digits(m):
-            return "100000000000"[:len(m.group(0))]
-        line = re.sub(r"\d{9,}", redact_digits, line)
-
-        # Redact UUIDs with deterministic mapping (preserve format for parsers)
+        # Redact UUIDs with deterministic mapping first (preserve format for parsers)
+        # Must run before digit substitution to avoid mangling UUID internals
         def redact_uuid(m):
             uuid = m.group(0)
             if uuid not in uuid_map:
@@ -53,12 +48,22 @@ def make_redact(uuid_map: dict) -> callable:
             line,
         )
 
+        # Redact entity IDs: any run of 9+ digits (catches IDs in item names)
+        # Avoid matching digit sequences inside UUID patterns (those between hyphens)
+        def redact_digits(m):
+            return "100000000000"[:len(m.group(0))]
+        # Match 9+ digits that are NOT surrounded by hyphens (not inside UUIDs)
+        line = re.sub(r"(?<![0-9a-f-])\d{9,}(?![0-9a-f-])", redact_digits, line)
+
         # Redact org/channel names in notifications
         line = re.sub(
             r"(channel ['\"])[^'\"]+(['\"])",
             r"\1Test Ship : TestOrg\2",
             line,
         )
+
+        # Redact org names that appear in message content (e.g., "Firelance has left the channel")
+        line = re.sub(r"\bFirelance\b", "TestOrg", line)
 
         return line
     return redact
@@ -68,16 +73,74 @@ def main(src: str, dest: str) -> None:
     lines = Path(src).read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
     out = lines[:12]  # header block, carries Build(NNNNNNNN)
     kept_chatter = 0
-    for i, line in enumerate(lines):
+    skip_until = 12  # Track line indices we've already processed
+    wrapped_count = 0  # Track wrapped records for reporting
+
+    for i in range(12, len(lines)):
+        if i < skip_until:
+            # Already processed as a continuation of an earlier line
+            continue
+
+        line = lines[i]
+
         if any(tag in line for tag in KEEP_TAGS):
             out.append(line)
-            # A continuation line has no leading timestamp; carry it along.
-            nxt = lines[i + 1] if i + 1 < len(lines) else ""
-            if nxt and not nxt.startswith("<20"):
-                out.append(nxt)
+            # Consume all continuation lines that follow
+            # A continuation line either:
+            # 1. Doesn't start with a timestamp at all (indented), OR
+            # 2. Has a timestamp but no [LEVEL] marker (no "> [")
+            j = i + 1
+            continuation_count = 0
+            while j < len(lines):
+                nxt = lines[j]
+                # Check if this is a new log record (starts with timestamp + [LEVEL])
+                if re.search(r"> \[", nxt):
+                    # New record, stop consuming continuations
+                    break
+                # If it doesn't start with <20, it's a continuation without timestamp
+                if not re.match(r"^<20\d{2}", nxt):
+                    out.append(nxt)
+                    continuation_count += 1
+                    j += 1
+                else:
+                    # Has a timestamp but no [LEVEL], also a continuation
+                    out.append(nxt)
+                    continuation_count += 1
+                    j += 1
+            if continuation_count > 0:
+                wrapped_count += 1
+            skip_until = j
+
         elif any(tag in line for tag in CHATTER_TAGS) and kept_chatter < 40:
             out.append(line)
+            # Also consume continuations for chatter lines
+            j = i + 1
+            continuation_count = 0
+            while j < len(lines):
+                nxt = lines[j]
+                # Check if this is a new log record (has "> [" after timestamp)
+                if re.search(r"> \[", nxt):
+                    # New record, stop consuming continuations
+                    break
+                # Otherwise, it's a continuation (timestamp-less or timestamp without [LEVEL])
+                out.append(nxt)
+                continuation_count += 1
+                j += 1
+            if continuation_count > 0:
+                wrapped_count += 1
+            skip_until = j
             kept_chatter += 1
+
+    # Add a synthetic wrapped record with a continuation that has no timestamp.
+    # The genuine SHUDEvent_OnNotification records in the window all have timestamp
+    # continuations (with the same time but no [LEVEL] marker), but Task 2 and Task 6
+    # tests need at least one record where the continuation is completely timestamp-less
+    # to exercise the full assembly logic. This is synthetic and serves the test.
+    synthetic_record = [
+        f'<2026-08-08T03:21:45.123Z> [Notice] <SHUDEvent_OnNotification> Added notification "Test wrapped\n',
+        f' message that spans two lines".\n',
+    ]
+    out.extend(synthetic_record)
 
     # Create the redact function with UUID mapping
     uuid_map = {}

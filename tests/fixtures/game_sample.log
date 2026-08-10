@@ -11,6 +11,7 @@
 <2026-08-08T02:42:26.206Z> [Trace] Environment:   PUB
 <2026-08-08T02:42:26.206Z> [Trace] Elastic:       https://cedar.rsi.global/app/discover
 <2026-08-08T02:43:37.157Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [0] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:43:37.157Z>    "Entered Monitored Space: " [0]
 <2026-08-08T02:43:37.165Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[1] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T02:43:37.165Z> [Notice] <InventoryManagementRequest> Queued Request[1] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[100000000000:Container:0] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T02:43:37.165Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[2] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
@@ -20,19 +21,40 @@
 <2026-08-08T02:43:37.165Z> [Notice] <InventoryManagementRequest> Processing Request[1] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T02:43:45.805Z> [Notice] <InventoryManagementRequest> Processing Request[2] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T02:43:45.846Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered microTech Jurisdiction: " [1] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:43:45.846Z>    "Entered Monitored Space: " [0]
+<2026-08-08T02:43:45.846Z>    "Entered microTech Jurisdiction: " [1]
 <2026-08-08T02:43:46.205Z> [Notice] <InventoryManagementRequest> Processing Request[3] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T02:43:46.205Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[Stanton4_NewBabbage] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T02:44:59.362Z> : " [2] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:44:59.362Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T02:44:59.362Z> : " [2]
 <2026-08-08T02:44:59.362Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T02:44:59.362Z> : " [3] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:44:59.362Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T02:44:59.362Z> : " [2]
+<2026-08-08T02:44:59.362Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T02:44:59.362Z> : " [3]
 <2026-08-08T02:47:03.567Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [4] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:47:03.567Z>    "Entering Armistice Zone - Combat Prohibited: " [4]
 <2026-08-08T02:48:32.211Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Shared: Reclusive Bounty: ~mission(TargetName) | High Risk: " [5] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:48:32.211Z>    "Contract Shared: Reclusive Bounty: ~mission(TargetName) | High Risk: " [5]
 <2026-08-08T02:48:33.955Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted:  Reclusive Bounty: Sergio Lesnik | High Risk: " [6] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000001], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:48:33.955Z>    "Contract Accepted:  Reclusive Bounty: Sergio Lesnik | High Risk: " [6]
 <2026-08-08T02:48:33.955Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Go to Asteroid Mining Base: " [7] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000001], ObjectiveId: [00000000-0000-0000-0000-000000000002] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:48:33.955Z>    "Contract Accepted:  Reclusive Bounty: Sergio Lesnik | High Risk: " [6]
+<2026-08-08T02:48:33.955Z>    "New Objective: Go to Asteroid Mining Base: " [7]
 <2026-08-08T02:49:07.844Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted:  A Call to Arms: " [8] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000003], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:49:07.844Z>    "Contract Accepted:  A Call to Arms: " [8]
 <2026-08-08T02:49:08.745Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [9] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:49:08.745Z>    "Contract Accepted:  A Call to Arms: " [8]
+<2026-08-08T02:49:08.745Z>    "Leaving Armistice Zone - Caution Advised: " [9]
 <2026-08-08T02:49:20.967Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000003 - objective_id 00000000-0000-0000-0000-000000000004 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T02:49:53.697Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000002, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to ~mission(Location)] [Team_MissionFeatures][Missions]
 <2026-08-08T02:49:53.719Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Go to Asteroid Mining Base
+<2026-08-08T02:49:53.719Z> : " [10] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000001], ObjectiveId: [00000000-0000-0000-0000-000000000002] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:49:53.719Z>    "Objective Complete: Go to Asteroid Mining Base
+<2026-08-08T02:49:53.719Z> : " [10]
 <2026-08-08T02:49:54.628Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000005 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T02:49:54.805Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000005, flags=RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Waves Defeated: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T02:49:54.805Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000005 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=RespectInheritedVisibility| [Team_GameServices][Missions]
@@ -44,6 +66,7 @@
 <2026-08-08T02:50:07.025Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000008, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
 <2026-08-08T02:50:07.025Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000008 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T02:50:07.030Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Defeat Hostile Ships: " [11] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000001], ObjectiveId: [00000000-0000-0000-0000-000000000008] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T02:50:07.030Z>    "New Objective: Defeat Hostile Ships: " [11]
 <2026-08-08T02:50:07.465Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000005, flags=RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Waves Defeated: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T02:50:07.465Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000005 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T02:50:07.465Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000008, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
@@ -220,10 +243,12 @@
 <2026-08-08T03:01:04.693Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000005 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:01:04.693Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000009 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:01:04.700Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Target Approaching: " [12] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000001], ObjectiveId: [00000000-0000-0000-0000-000000000009] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:01:04.700Z>    "New Objective: Target Approaching: " [12]
 <2026-08-08T03:01:19.361Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000009, flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=-1][Text=Target Approaching] [Team_MissionFeatures][Missions]
 <2026-08-08T03:01:19.361Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000009 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:01:19.362Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000010 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:01:19.366Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Neutralize Boss: " [13] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000001], ObjectiveId: [00000000-0000-0000-0000-000000000010] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:01:19.366Z>    "New Objective: Neutralize Boss: " [13]
 <2026-08-08T03:01:19.566Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000009, flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=-1][Text=Target Approaching] [Team_MissionFeatures][Missions]
 <2026-08-08T03:01:19.566Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id 00000000-0000-0000-0000-000000000009 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:01:31.977Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000010, flags=ShowInLog|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Neutralize Boss] [Team_MissionFeatures][Missions]
@@ -231,24 +256,54 @@
 <2026-08-08T03:02:24.143Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=phase_00000000-0000-0000-0000-000000000011, flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=0][Text=<= UNINITIALIZED =>] [Team_MissionFeatures][Missions]
 <2026-08-08T03:02:24.143Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000001 - objective_id phase_00000000-0000-0000-0000-000000000011 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase| [Team_GameServices][Missions]
 <2026-08-08T03:02:24.150Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Complete: Reclusive Bounty: Sergio Lesnik | High Risk: " [14] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000001], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:02:24.150Z>    "Contract Complete: Reclusive Bounty: Sergio Lesnik | High Risk: " [14]
 <2026-08-08T03:02:55.293Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered UEE Jurisdiction: " [15] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:02:55.293Z>    "Entered UEE Jurisdiction: " [15]
 <2026-08-08T03:03:35.168Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered microTech Jurisdiction: " [16] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:03:35.168Z>    "Entered microTech Jurisdiction: " [16]
 <2026-08-08T03:04:16.830Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [17] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:04:16.830Z>    "Entering Armistice Zone - Combat Prohibited: " [17]
 <2026-08-08T03:04:18.035Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[4] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:04:18.035Z> [Notice] <InventoryManagementRequest> Queued Request[4] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:04:18.035Z> [Notice] <InventoryManagementRequest> Processing Request[4] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:04:18.035Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:04:48.794Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Device: You can heal and apply drugs to a target over a short distance using a Medical Device." [18] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:04:48.794Z>    "Medical Device: You can heal and apply drugs to a target over a short distance using a Medical Device." [18]
 <2026-08-08T03:04:49.123Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Device - Modes: Toggle to the Advanced Mode to access more drug application options." [19] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:04:49.123Z>    "Medical Device: You can heal and apply drugs to a target over a short distance using a Medical Device." [18]
+<2026-08-08T03:04:49.123Z>    "Medical Device - Modes: Toggle to the Advanced Mode to access more drug application options." [19]
 <2026-08-08T03:04:50.357Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Device: Choose who to heal by toggling between targeting yourself and other injured individuals." [20] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:04:50.357Z>    "Medical Device - Modes: Toggle to the Advanced Mode to access more drug application options." [19]
+<2026-08-08T03:04:50.357Z>    "Medical Device: Choose who to heal by toggling between targeting yourself and other injured individuals." [20]
 <2026-08-08T03:04:51.657Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Device: Additional information regarding a target's current health status can found in the Medical Device's AR display." [21] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:04:51.657Z>    "Medical Device: Choose who to heal by toggling between targeting yourself and other injured individuals." [20]
+<2026-08-08T03:04:51.657Z>    "Medical Device: Additional information regarding a target's current health status can found in the Medical Device's AR display." [21]
 <2026-08-08T03:05:25.341Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [22] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:05:25.341Z>    "Leaving Armistice Zone - Caution Advised: " [22]
 <2026-08-08T03:06:42.137Z> [Notice] <SHUDEvent_OnNotification> Added notification "Member Left
+<2026-08-08T03:06:42.137Z> TestOrg has left the channel 'Test Ship : TestOrg'.: " [23] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:06:42.137Z>    "Member Left
+<2026-08-08T03:06:42.137Z> TestOrg has left the channel 'Test Ship : TestOrg'.: " [23]
 <2026-08-08T03:06:42.137Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T03:06:42.137Z> : " [24] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:06:42.137Z>    "Member Left
+<2026-08-08T03:06:42.137Z> TestOrg has left the channel 'Test Ship : TestOrg'.: " [23]
+<2026-08-08T03:06:42.137Z>    "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T03:06:42.137Z> : " [24]
 <2026-08-08T03:07:30.690Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party
+<2026-08-08T03:07:30.690Z> TestOrg disconnected.: " [25] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:07:30.690Z>    "Party
+<2026-08-08T03:07:30.690Z> TestOrg disconnected.: " [25]
 <2026-08-08T03:07:35.001Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [26] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:07:35.001Z>    "Party
+<2026-08-08T03:07:35.001Z> TestOrg disconnected.: " [25]
+<2026-08-08T03:07:35.001Z>    "Entering Armistice Zone - Combat Prohibited: " [26]
 <2026-08-08T03:08:03.422Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party Launch
+<2026-08-08T03:08:03.422Z> Initiated by party leader TestOrg.: " [27] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:08:03.422Z>    "Party Launch
+<2026-08-08T03:08:03.422Z> Initiated by party leader TestOrg.: " [27]
 <2026-08-08T03:08:46.675Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [28] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:08:46.675Z>    "Entered Monitored Space: " [28]
 <2026-08-08T03:08:46.676Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[5] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:08:46.676Z> [Notice] <InventoryManagementRequest> Queued Request[5] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[100000000000:Container:0] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:08:46.676Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[6] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
@@ -257,20 +312,43 @@
 <2026-08-08T03:08:46.676Z> [Notice] <InventoryManagementRequest> Queued Request[7] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:08:46.676Z> [Notice] <InventoryManagementRequest> Processing Request[5] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:08:46.713Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [29] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:08:46.713Z>    "Entered Monitored Space: " [28]
+<2026-08-08T03:08:46.713Z>    "Entering Armistice Zone - Combat Prohibited: " [29]
 <2026-08-08T03:08:46.713Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [30] to queue. New queue size: 3, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:08:46.713Z>    "Entered Monitored Space: " [28]
+<2026-08-08T03:08:46.713Z>    "Entering Armistice Zone - Combat Prohibited: " [29]
+<2026-08-08T03:08:46.713Z>    "Entering Armistice Zone - Combat Prohibited: " [30]
 <2026-08-08T03:09:16.467Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered microTech Jurisdiction: " [31] to queue. New queue size: 4, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:09:16.468Z>    "Entered Monitored Space: " [28]
+<2026-08-08T03:09:16.468Z>    "Entering Armistice Zone - Combat Prohibited: " [29]
+<2026-08-08T03:09:16.468Z>    "Entering Armistice Zone - Combat Prohibited: " [30]
+<2026-08-08T03:09:16.468Z>    "Entered microTech Jurisdiction: " [31]
 <2026-08-08T03:09:16.473Z> [Notice] <InventoryManagementRequest> Processing Request[6] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:09:17.122Z> [Notice] <InventoryManagementRequest> Processing Request[7] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:09:17.122Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:10:14.243Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [32] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:10:14.243Z>    "Entering Armistice Zone - Combat Prohibited: " [32]
 <2026-08-08T03:10:42.095Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [33] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:10:42.095Z>    "Entering Armistice Zone - Combat Prohibited: " [33]
 <2026-08-08T03:11:03.365Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [34] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:11:03.365Z>    "Leaving Armistice Zone - Caution Advised: " [34]
 <2026-08-08T03:11:16.315Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party
+<2026-08-08T03:11:16.315Z> TestOrg connected.: " [35] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:11:16.315Z>    "Party
+<2026-08-08T03:11:16.315Z> TestOrg connected.: " [35]
 <2026-08-08T03:11:22.551Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [36] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:11:22.551Z>    "Party
+<2026-08-08T03:11:22.551Z> TestOrg connected.: " [35]
+<2026-08-08T03:11:22.551Z>    "Entering Armistice Zone - Combat Prohibited: " [36]
 <2026-08-08T03:11:56.548Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [37] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:11:56.548Z>    "Entering Armistice Zone - Combat Prohibited: " [37]
 <2026-08-08T03:12:03.811Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [38] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:12:03.811Z>    "Entering Armistice Zone - Combat Prohibited: " [38]
 <2026-08-08T03:12:19.006Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [39] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:12:19.006Z>    "Leaving Armistice Zone - Caution Advised: " [39]
 <2026-08-08T03:12:21.762Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [40] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:12:21.762Z>    "Leaving Armistice Zone - Caution Advised: " [39]
+<2026-08-08T03:12:21.762Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [40]
 <2026-08-08T03:12:44.599Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[8] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:12:44.599Z> [Notice] <InventoryManagementRequest> Queued Request[8] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[100000000000:Container:0] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:12:44.599Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[9] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
@@ -278,11 +356,27 @@
 <2026-08-08T03:12:44.599Z> [Notice] <InventoryManagementRequest> Processing Request[8] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:12:44.820Z> [Notice] <InventoryManagementRequest> Processing Request[9] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:14:22.551Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [41] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:14:22.551Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [41]
 <2026-08-08T03:14:33.979Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party
+<2026-08-08T03:14:33.979Z> TestOrg disconnected.: " [42] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:14:33.979Z>    "Party
+<2026-08-08T03:14:33.979Z> TestOrg disconnected.: " [42]
 <2026-08-08T03:15:12.167Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party Launch
+<2026-08-08T03:15:12.167Z> Initiated by party leader TestOrg.: " [43] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:15:12.167Z>    "Party Launch
+<2026-08-08T03:15:12.167Z> Initiated by party leader TestOrg.: " [43]
 <2026-08-08T03:15:15.235Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party Launch
+<2026-08-08T03:15:15.235Z> Join queue canceled by party leader TestOrg.: " [44] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:15:15.235Z>    "Party Launch
+<2026-08-08T03:15:15.235Z> Initiated by party leader TestOrg.: " [43]
+<2026-08-08T03:15:15.235Z>    "Party Launch
+<2026-08-08T03:15:15.235Z> Join queue canceled by party leader TestOrg.: " [44]
 <2026-08-08T03:15:42.168Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party Launch
+<2026-08-08T03:15:42.168Z> Initiated by party leader TestOrg.: " [45] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:15:42.168Z>    "Party Launch
+<2026-08-08T03:15:42.168Z> Initiated by party leader TestOrg.: " [45]
 <2026-08-08T03:16:23.136Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [46] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:16:23.136Z>    "Entered Monitored Space: " [46]
 <2026-08-08T03:16:23.137Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[10] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:16:23.137Z> [Notice] <InventoryManagementRequest> Queued Request[10] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[100000000000:Container:0] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:16:23.137Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[11] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
@@ -291,32 +385,85 @@
 <2026-08-08T03:16:23.137Z> [Notice] <InventoryManagementRequest> Queued Request[12] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:16:23.137Z> [Notice] <InventoryManagementRequest> Processing Request[10] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:16:23.186Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [47] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:16:23.186Z>    "Entered Monitored Space: " [46]
+<2026-08-08T03:16:23.186Z>    "Entering Armistice Zone - Combat Prohibited: " [47]
 <2026-08-08T03:16:23.186Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [48] to queue. New queue size: 3, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:16:23.186Z>    "Entered Monitored Space: " [46]
+<2026-08-08T03:16:23.186Z>    "Entering Armistice Zone - Combat Prohibited: " [47]
+<2026-08-08T03:16:23.186Z>    "Entering Armistice Zone - Combat Prohibited: " [48]
 <2026-08-08T03:16:36.367Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered microTech Jurisdiction: " [49] to queue. New queue size: 4, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:16:36.367Z>    "Entered Monitored Space: " [46]
+<2026-08-08T03:16:36.367Z>    "Entering Armistice Zone - Combat Prohibited: " [47]
+<2026-08-08T03:16:36.367Z>    "Entering Armistice Zone - Combat Prohibited: " [48]
+<2026-08-08T03:16:36.367Z>    "Entered microTech Jurisdiction: " [49]
 <2026-08-08T03:16:36.492Z> [Notice] <InventoryManagementRequest> Processing Request[11] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:16:36.926Z> [Notice] <InventoryManagementRequest> Processing Request[12] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:16:36.926Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:16:43.651Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [50] to queue. New queue size: 4, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:16:43.651Z>    "Entering Armistice Zone - Combat Prohibited: " [47]
+<2026-08-08T03:16:43.651Z>    "Entering Armistice Zone - Combat Prohibited: " [48]
+<2026-08-08T03:16:43.651Z>    "Entered microTech Jurisdiction: " [49]
+<2026-08-08T03:16:43.651Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [50]
 <2026-08-08T03:17:04.505Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [51] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:17:04.505Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [50]
+<2026-08-08T03:17:04.505Z>    "Entering Armistice Zone - Combat Prohibited: " [51]
 <2026-08-08T03:18:37.255Z> [Notice] <SHUDEvent_OnNotification> Added notification "Party
+<2026-08-08T03:18:37.255Z> TestOrg connected.: " [52] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:18:37.255Z>    "Party
+<2026-08-08T03:18:37.255Z> TestOrg connected.: " [52]
 <2026-08-08T03:18:44.623Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [53] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:18:44.623Z>    "Party
+<2026-08-08T03:18:44.623Z> TestOrg connected.: " [52]
+<2026-08-08T03:18:44.623Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [53]
 <2026-08-08T03:19:17.055Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [54] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:19:17.055Z>    "Entering Armistice Zone - Combat Prohibited: " [54]
 <2026-08-08T03:19:50.772Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [55] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:19:50.772Z>    "Leaving Armistice Zone - Caution Advised: " [55]
 <2026-08-08T03:20:19.648Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T03:20:19.648Z> : " [56] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:20:19.648Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T03:20:19.648Z> : " [56]
 <2026-08-08T03:20:19.648Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T03:20:19.648Z> : " [57] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:20:19.648Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T03:20:19.648Z> : " [56]
+<2026-08-08T03:20:19.648Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T03:20:19.648Z> : " [57]
 <2026-08-08T03:20:19.889Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Member Joined
+<2026-08-08T03:20:19.889Z> TestOrg has joined the channel 'Test Ship : TestOrg'.: " [58] to queue. New queue size: 3, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:20:19.889Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T03:20:19.889Z> : " [56]
+<2026-08-08T03:20:19.889Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T03:20:19.889Z> : " [57]
+<2026-08-08T03:20:19.889Z>    "New Member Joined
+<2026-08-08T03:20:19.889Z> TestOrg has joined the channel 'Test Ship : TestOrg'.: " [58]
 <2026-08-08T03:20:56.611Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted:  A Call to Arms: " [59] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000012], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:20:56.611Z>    "Contract Accepted:  A Call to Arms: " [59]
 <2026-08-08T03:20:57.858Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000012 - objective_id 00000000-0000-0000-0000-000000000013 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:20:57.866Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Locate CrimeStat rated criminals and neutralize any encountered. Criminals part of paid contract work do not qualify.: " [60] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000012], ObjectiveId: [00000000-0000-0000-0000-000000000013] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:20:57.866Z>    "Contract Accepted:  A Call to Arms: " [59]
+<2026-08-08T03:20:57.867Z>    "New Objective: Locate CrimeStat rated criminals and neutralize any encountered. Criminals part of paid contract work do not qualify.: " [60]
 <2026-08-08T03:21:51.800Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [61] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:21:51.800Z>    "Entering Armistice Zone - Combat Prohibited: " [61]
 <2026-08-08T03:23:08.094Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Shared: Reclusive Bounty: ~mission(TargetName) | Very-High Risk: " [62] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:23:08.094Z>    "Contract Shared: Reclusive Bounty: ~mission(TargetName) | Very-High Risk: " [62]
 <2026-08-08T03:23:10.891Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted:  Reclusive Bounty: Timur "Smokey" Faller | Very-High Risk: " [63] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000014], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:23:10.891Z>    "Contract Accepted:  Reclusive Bounty: Timur "Smokey" Faller | Very-High Risk: " [63]
 <2026-08-08T03:23:10.892Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Go to Asteroid Mining Base: " [64] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000014], ObjectiveId: [00000000-0000-0000-0000-000000000015] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:23:10.892Z>    "Contract Accepted:  Reclusive Bounty: Timur "Smokey" Faller | Very-High Risk: " [63]
+<2026-08-08T03:23:10.892Z>    "New Objective: Go to Asteroid Mining Base: " [64]
 <2026-08-08T03:23:46.621Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [65] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:23:46.622Z>    "Leaving Armistice Zone - Caution Advised: " [65]
 <2026-08-08T03:24:18.062Z> [Notice] <SHUDEvent_OnNotification> Added notification "Exited Monitored Space: " [66] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:24:18.062Z>    "Exited Monitored Space: " [66]
 <2026-08-08T03:24:20.421Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [67] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:24:20.421Z>    "Exited Monitored Space: " [66]
+<2026-08-08T03:24:20.421Z>    "Entered Monitored Space: " [67]
 <2026-08-08T03:24:31.068Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000015, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to ~mission(Location)] [Team_MissionFeatures][Missions]
 <2026-08-08T03:24:31.092Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Go to Asteroid Mining Base
+<2026-08-08T03:24:31.092Z> : " [68] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000014], ObjectiveId: [00000000-0000-0000-0000-000000000015] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:24:31.092Z>    "Objective Complete: Go to Asteroid Mining Base
+<2026-08-08T03:24:31.092Z> : " [68]
 <2026-08-08T03:24:31.465Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000016 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:24:31.575Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000016, flags=RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Waves Defeated: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T03:24:31.575Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000016 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=RespectInheritedVisibility| [Team_GameServices][Missions]
@@ -328,6 +475,9 @@
 <2026-08-08T03:24:35.019Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000019, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
 <2026-08-08T03:24:35.019Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000019 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:24:35.025Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Defeat Hostile Ships: " [69] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000014], ObjectiveId: [00000000-0000-0000-0000-000000000019] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:24:35.025Z>    "Objective Complete: Go to Asteroid Mining Base
+<2026-08-08T03:24:35.025Z> : " [68]
+<2026-08-08T03:24:35.025Z>    "New Objective: Defeat Hostile Ships: " [69]
 <2026-08-08T03:24:35.312Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000016, flags=RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Waves Defeated: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T03:24:35.313Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000016 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:24:35.313Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000019, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
@@ -377,6 +527,7 @@
 <2026-08-08T03:27:02.675Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000019, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
 <2026-08-08T03:27:02.675Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000019 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:27:03.838Z> [Notice] <SHUDEvent_OnNotification> Added notification "Awarded 500 aUEC: " [70] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:27:03.838Z>    "Awarded 500 aUEC: " [70]
 <2026-08-08T03:27:45.863Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000017, flags=Hidden|ShowInLog|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ship] [Team_MissionFeatures][Missions]
 <2026-08-08T03:27:45.863Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000017 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=Hidden|ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:27:45.863Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000019, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
@@ -471,6 +622,67 @@
 <2026-08-08T03:32:21.032Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000017 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=Hidden|ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:32:21.032Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000019, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
 <2026-08-08T03:32:21.032Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000019 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress|RespectInheritedVisibility| [Team_GameServices][Missions]
+<2026-08-08T03:32:45.952Z> PHYSICS INSTANCE STATS BEGIN 6
+<2026-08-08T03:32:45.953Z>   entities:    30461 allocated:   262144, reallocs :        6, deletion queue :       25(stalled :       25)
+<2026-08-08T03:32:45.953Z>   instances:        0 size:      288 bytes type: CPhysicalPlaceholder
+<2026-08-08T03:32:45.953Z>   instances:    93950 size:     1024 bytes type: CPhysicalEntity
+<2026-08-08T03:32:45.953Z>   instances:        4 size:     3008 bytes type: CActorEntity
+<2026-08-08T03:32:45.953Z>   instances:        0 size:     1280 bytes type: CParticleEntity
+<2026-08-08T03:32:45.953Z>   instances:        0 size:     1728 bytes type: CRopeEntity
+<2026-08-08T03:32:45.953Z>   instances:        0 size:     1536 bytes type: CRopeEntityEx
+<2026-08-08T03:32:45.953Z>   instances:        0 size:     1472 bytes type: CSoftEntity
+<2026-08-08T03:32:45.953Z>   instances:        0 size:     1472 bytes type: CSoftEntityEx
+<2026-08-08T03:32:45.953Z>   instances:     7221 size:     2688 bytes type: CRigidEntity
+<2026-08-08T03:32:45.953Z>   instances:        4 size:     3456 bytes type: CArticulatedEntity
+<2026-08-08T03:32:45.953Z>   instances:        0 size:    47936 bytes type: CWheeledVehicleEntity
+<2026-08-08T03:32:45.953Z>   instances:        4 size:    28224 bytes type: CSpaceshipEntity
+<2026-08-08T03:32:45.953Z>   instances:        0 size:     2944 bytes type: CHoverEntity
+<2026-08-08T03:32:45.953Z>   instances:       28 size:     1728 bytes type: CPhysPlanetEntity
+<2026-08-08T03:32:45.953Z>   instances:     3949 size:     1792 bytes type: CPhysArea
+<2026-08-08T03:32:45.953Z>   instances:    39523 size:      144 bytes type: CBoxGeom
+<2026-08-08T03:32:45.953Z>   instances:     2391 size:      160 bytes type: CSphereGeom
+<2026-08-08T03:32:45.953Z>   instances:     1102 size:      176 bytes type: CCapsuleGeom
+<2026-08-08T03:32:45.953Z>   instances:     2575 size:      176 bytes type: CCylinderGeom
+<2026-08-08T03:32:45.953Z>   instances:     6450 size:      544 bytes type: CEntityGrid
+<2026-08-08T03:32:45.953Z>   instances:     9172 size:      664 bytes type: CTriMesh
+<2026-08-08T03:32:45.953Z>   instances:      474 size:       64 bytes type: CDistanceFieldGeom
+<2026-08-08T03:32:45.953Z>   instances:     2111 size:       64 bytes type: CBitVoxelGeom
+<2026-08-08T03:32:45.953Z>   instances:     6331 size:      408 bytes type: single_part_t
+<2026-08-08T03:32:45.953Z>   instances:     6331 size:       88 bytes type: single_part_instance_t
+<2026-08-08T03:32:45.953Z>   instances:    14236 size:      416 bytes type: container_t
+<2026-08-08T03:32:45.953Z>   instances:   105160 size:      128 bytes type: container_instance_t
+<2026-08-08T03:32:45.953Z>   instances:        0 size:      688 bytes type: COrderedMesh
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_1d_Ita
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_1c_Magda
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_2c_Yela
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_1b_Aberdeen
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_4a_Calliope
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_2b_Daymar
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_3a_Lyria
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_1a_Ariel
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_4c_Euterpe
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_4b_Clio
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_3_ArcCorp
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_2a_Cellin
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_1_Hurston
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro5e
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_3b_Wala
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro5d
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro5f
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro5
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro4
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_2_Crusader
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro5c
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro1
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro5b
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: OOC_Stanton_4_Microtech
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro3
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro5a
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro2
+<2026-08-08T03:32:45.953Z>   planet cells:    0 [    0] meshes:    0 [    0] name: pyro6
+<2026-08-08T03:32:45.953Z> total size of part container memory chunks: 80100032 bytes
+<2026-08-08T03:32:45.953Z> total size of part container instance memory chunks: 29698152 bytes
+<2026-08-08T03:32:45.953Z> PHYSICS INSTANCE STATS END
 <2026-08-08T03:32:53.586Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000017, flags=Hidden|ShowInLog|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=-1][Text=Defeat Hostile Ship] [Team_MissionFeatures][Missions]
 <2026-08-08T03:32:53.586Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000017 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=Hidden|ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:32:53.586Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000019, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
@@ -481,6 +693,7 @@
 <2026-08-08T03:32:53.586Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000016 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:32:53.707Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000020 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:32:53.714Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Target Approaching: " [71] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000014], ObjectiveId: [00000000-0000-0000-0000-000000000020] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:32:53.714Z>    "New Objective: Target Approaching: " [71]
 <2026-08-08T03:32:53.920Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000019, flags=ShowInLog|ShowProgress|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Defeat Hostile Ships] [Team_MissionFeatures][Missions]
 <2026-08-08T03:32:53.921Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000019 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=ShowInLog|ShowProgress|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:32:53.921Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000017, flags=Hidden|ShowInLog|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=-1][Text=Defeat Hostile Ship] [Team_MissionFeatures][Missions]
@@ -488,12 +701,15 @@
 <2026-08-08T03:32:53.921Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000016, flags=RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Waves Defeated: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T03:32:53.921Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000016 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:32:54.416Z> [Notice] <SHUDEvent_OnNotification> Added notification "Awarded 500 aUEC: " [72] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:32:54.416Z>    "New Objective: Target Approaching: " [71]
+<2026-08-08T03:32:54.416Z>    "Awarded 500 aUEC: " [72]
 <2026-08-08T03:33:08.504Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000018, flags=Hidden|HiddenInUI|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=0][Text=New wave incoming: ] [Team_MissionFeatures][Missions]
 <2026-08-08T03:33:08.504Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000018 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=Hidden|HiddenInUI|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:33:08.755Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000020, flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=-1][Text=Target Approaching] [Team_MissionFeatures][Missions]
 <2026-08-08T03:33:08.755Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000020 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:33:08.755Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000021 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:33:08.761Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Neutralize Boss: " [73] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000014], ObjectiveId: [00000000-0000-0000-0000-000000000021] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:33:08.761Z>    "New Objective: Neutralize Boss: " [73]
 <2026-08-08T03:33:09.065Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000020, flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=-1][Text=Target Approaching] [Team_MissionFeatures][Missions]
 <2026-08-08T03:33:09.065Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id 00000000-0000-0000-0000-000000000020 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=Hidden|HiddenInUI|ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:33:19.977Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000021, flags=ShowInLog|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Neutralize Boss] [Team_MissionFeatures][Missions]
@@ -501,18 +717,34 @@
 <2026-08-08T03:34:09.625Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=phase_00000000-0000-0000-0000-000000000011, flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=0][Text=<= UNINITIALIZED =>] [Team_MissionFeatures][Missions]
 <2026-08-08T03:34:09.625Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000014 - objective_id phase_00000000-0000-0000-0000-000000000011 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase| [Team_GameServices][Missions]
 <2026-08-08T03:34:09.665Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Complete: Reclusive Bounty: Timur "Smokey" Faller | Very-High Risk: " [74] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000014], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:34:09.665Z>    "Contract Complete: Reclusive Bounty: Timur "Smokey" Faller | Very-High Risk: " [74]
 <2026-08-08T03:34:33.068Z> [Notice] <SHUDEvent_OnNotification> Added notification "Exited Monitored Space: " [75] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:34:33.068Z>    "Exited Monitored Space: " [75]
 <2026-08-08T03:35:07.114Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [76] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:35:07.114Z>    "Entered Monitored Space: " [76]
 <2026-08-08T03:37:38.888Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Shared: Orange Level Contract: Potential Security Threat: " [77] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:37:38.888Z>    "Contract Shared: Orange Level Contract: Potential Security Threat: " [77]
 <2026-08-08T03:37:40.553Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted:  Orange Level Contract: Potential Security Threat: " [78] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:37:40.553Z>    "Contract Accepted:  Orange Level Contract: Potential Security Threat: " [78]
 <2026-08-08T03:37:40.553Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Go to the patrol coordinates.: " [79] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000023] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:37:40.553Z>    "Contract Accepted:  Orange Level Contract: Potential Security Threat: " [78]
+<2026-08-08T03:37:40.553Z>    "New Objective: Go to the patrol coordinates.: " [79]
 <2026-08-08T03:38:17.938Z> [Notice] <SHUDEvent_OnNotification> Added notification "Exited Monitored Space: " [80] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:38:17.938Z>    "Exited Monitored Space: " [80]
 <2026-08-08T03:38:18.758Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [81] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:38:18.758Z>    "Exited Monitored Space: " [80]
+<2026-08-08T03:38:18.758Z>    "Entered Monitored Space: " [81]
 <2026-08-08T03:38:35.564Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000023, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to the patrol coordinates.] [Team_MissionFeatures][Missions]
 <2026-08-08T03:38:35.577Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:38:35.577Z> : " [82] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000023] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:38:35.577Z>    "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:38:35.577Z> : " [82]
 <2026-08-08T03:38:35.973Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000024 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:38:35.973Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000025 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:38:35.977Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Protect the Ship: " [83] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000024] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:38:35.977Z>    "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:38:35.977Z> : " [82]
+<2026-08-08T03:38:35.977Z>    "New Objective: Protect the Ship: " [83]
 <2026-08-08T03:38:36.145Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000024, flags=ShowInLog|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Protect the Ship] [Team_MissionFeatures][Missions]
 <2026-08-08T03:38:36.145Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000024 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:38:56.618Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000024, flags=ShowInLog|DisplayMarkerDistance|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Protect the Ship] [Team_MissionFeatures][Missions]
@@ -570,10 +802,14 @@
 <2026-08-08T03:42:29.984Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000026, flags=SilentUpdates|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Wait for Dispatch: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T03:42:29.984Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000026 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:42:29.987Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Go to the patrol coordinates.: " [84] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000029] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:42:29.987Z>    "New Objective: Go to the patrol coordinates.: " [84]
 <2026-08-08T03:42:30.223Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000026, flags=SilentUpdates|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Wait for Dispatch: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T03:42:30.223Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000026 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:43:13.623Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000029, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to the patrol coordinates.] [Team_MissionFeatures][Missions]
 <2026-08-08T03:43:13.634Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:43:13.634Z> : " [85] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000029] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:43:13.634Z>    "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:43:13.634Z> : " [85]
 <2026-08-08T03:43:14.116Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000030 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:43:14.116Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000031 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=SilentUpdates|DisplayMarkerDistance|AutoAddNewPlayers| [Team_GameServices][Missions]
 <2026-08-08T03:43:14.116Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000032 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=SilentUpdates|DisplayMarkerDistance|AutoAddNewPlayers| [Team_GameServices][Missions]
@@ -583,6 +819,9 @@
 <2026-08-08T03:43:14.116Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000036 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:43:14.116Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000037 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:43:14.120Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Investigate all patrol points.: " [86] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000030] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:43:14.120Z>    "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:43:14.120Z> : " [85]
+<2026-08-08T03:43:14.120Z>    "New Objective: Investigate all patrol points.: " [86]
 <2026-08-08T03:43:14.270Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000038 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:43:14.270Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000039 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:43:24.116Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000037, flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=1][Text=Perform Focused Scan] [Team_MissionFeatures][Missions]
@@ -612,6 +851,7 @@
 <2026-08-08T03:45:11.131Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000038, flags=SilentUpdates|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Perform Focused Scan] [Team_MissionFeatures][Missions]
 <2026-08-08T03:45:11.131Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000038 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:45:11.135Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Return to Location: " [87] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000040] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:45:11.135Z>    "New Objective: Return to Location: " [87]
 <2026-08-08T03:45:26.785Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000038, flags=SilentUpdates|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Perform Focused Scan] [Team_MissionFeatures][Missions]
 <2026-08-08T03:45:26.785Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000038 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:45:27.059Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000034, flags=SilentUpdates|DisplayMarkerDistance|AutoAddNewPlayers|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=<= UNINITIALIZED =>] [Team_MissionFeatures][Missions]
@@ -628,6 +868,9 @@
 <2026-08-08T03:45:27.332Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000034 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=SilentUpdates|DisplayMarkerDistance|AutoAddNewPlayers| [Team_GameServices][Missions]
 <2026-08-08T03:45:46.484Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000040, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Return to ~mission(Location)] [Team_MissionFeatures][Missions]
 <2026-08-08T03:45:46.495Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Return to Location
+<2026-08-08T03:45:46.495Z> : " [88] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000040] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:45:46.495Z>    "Objective Complete: Return to Location
+<2026-08-08T03:45:46.495Z> : " [88]
 <2026-08-08T03:45:46.807Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000039, flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=1][Text=Perform Focused Scan] [Team_MissionFeatures][Missions]
 <2026-08-08T03:45:46.807Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000039 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=Hidden|HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:45:56.218Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000037, flags=SilentUpdates|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Perform Focused Scan] [Team_MissionFeatures][Missions]
@@ -669,14 +912,21 @@
 <2026-08-08T03:47:23.486Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id phase_00000000-0000-0000-0000-000000000028 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase| [Team_GameServices][Missions]
 <2026-08-08T03:47:23.486Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id phase_00000000-0000-0000-0000-000000000042 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase| [Team_GameServices][Missions]
 <2026-08-08T03:47:23.491Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Go to the patrol coordinates.: " [89] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000043] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:47:23.491Z>    "New Objective: Go to the patrol coordinates.: " [89]
 <2026-08-08T03:47:23.507Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000041, flags=SilentUpdates|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Wait for Dispatch: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T03:47:23.507Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000041 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:47:23.876Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000041, flags=SilentUpdates|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=-1][Text=Wait for Dispatch: %ls] [Team_MissionFeatures][Missions]
 <2026-08-08T03:47:23.876Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000041 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:48:02.752Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000043, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to the patrol coordinates.] [Team_MissionFeatures][Missions]
 <2026-08-08T03:48:02.771Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:48:02.771Z> : " [90] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000043] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:48:02.771Z>    "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:48:02.771Z> : " [90]
 <2026-08-08T03:48:03.071Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000044 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|DisplayMarkerDistance|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:48:03.075Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Neutralize Targets: " [91] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [00000000-0000-0000-0000-000000000044] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:48:03.075Z>    "Objective Complete: Go to the patrol coordinates.
+<2026-08-08T03:48:03.075Z> : " [90]
+<2026-08-08T03:48:03.075Z>    "New Objective: Neutralize Targets: " [91]
 <2026-08-08T03:48:11.822Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000044, flags=ShowInLog|DisplayMarkerDistance|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Neutralize Targets] [Team_MissionFeatures][Missions]
 <2026-08-08T03:48:11.822Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id 00000000-0000-0000-0000-000000000044 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|DisplayMarkerDistance|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T03:48:11.952Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000044, flags=ShowInLog|DisplayMarkerDistance|RespectInheritedVisibility|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=0][Text=Neutralize Targets] [Team_MissionFeatures][Missions]
@@ -699,32 +949,60 @@
 <2026-08-08T03:51:51.301Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=phase_00000000-0000-0000-0000-000000000042, flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=0][Text=<= UNINITIALIZED =>] [Team_MissionFeatures][Missions]
 <2026-08-08T03:51:51.301Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000022 - objective_id phase_00000000-0000-0000-0000-000000000042 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase| [Team_GameServices][Missions]
 <2026-08-08T03:51:51.325Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Complete: Orange Level Contract: Potential Security Threat: " [92] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000022], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:51:51.325Z>    "Contract Complete: Orange Level Contract: Potential Security Threat: " [92]
 <2026-08-08T03:51:53.177Z> [Notice] <SHUDEvent_OnNotification> Added notification "Received Blueprint: Parallax "Sanguine" Energy Assault Rifle: " [93] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:51:53.177Z>    "Contract Complete: Orange Level Contract: Potential Security Threat: " [92]
+<2026-08-08T03:51:53.177Z>    "Received Blueprint: Parallax "Sanguine" Energy Assault Rifle: " [93]
 <2026-08-08T03:52:41.503Z> [Notice] <SHUDEvent_OnNotification> Added notification "Exited Monitored Space: " [94] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:52:41.503Z>    "Exited Monitored Space: " [94]
 <2026-08-08T03:52:48.652Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [95] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:52:48.652Z>    "Entered Monitored Space: " [95]
 <2026-08-08T03:53:38.969Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [96] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:53:38.969Z>    "Entering Armistice Zone - Combat Prohibited: " [96]
 <2026-08-08T03:54:05.149Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[13] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:54:05.149Z> [Notice] <InventoryManagementRequest> Queued Request[13] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID]. Source[NULL] amount[0] rank[]. Target[NULL] amount[0] rank[]. Item[NONE] action[None]. RequestInProgress[0] CurrentProcess[] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:54:05.150Z> [Notice] <InventoryManagementRequest> Processing Request[13] Type[QueryInventory] for 'TestPilot' [100000000000] Source Inventory[INVALID] Target Inventory[INVALID] CanLockQueue[No] DependentRequest[1000000000] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:54:05.150Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[Stanton4_NewBabbage] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:55:54.855Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [97] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:55:54.855Z>    "Leaving Armistice Zone - Caution Advised: " [97]
 <2026-08-08T03:57:11.978Z> [Notice] <InventoryManagementRequest> Attempting queuing of Request[14] Type[QueryInventory] for 'TestPilot' [100000000000]. [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T03:57:59.549Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T03:57:59.549Z> : " [98] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T03:57:59.549Z>    "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T03:57:59.549Z> : " [98]
 <2026-08-08T04:01:25.343Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[Stanton4_NewBabbage] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:02:08.747Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[Stanton4_NewBabbage] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:04:32.917Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:04:32.917Z> : " [99] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:04:32.917Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:04:32.917Z> : " [99]
 <2026-08-08T04:04:32.917Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:04:32.917Z> : " [100] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:04:32.917Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:04:32.917Z> : " [99]
+<2026-08-08T04:04:32.917Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:04:32.917Z> : " [100]
 <2026-08-08T04:06:55.324Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Shared: Help Protect Site: " [101] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:06:55.325Z>    "Contract Shared: Help Protect Site: " [101]
 <2026-08-08T04:06:57.599Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted:  Help Protect Site: " [102] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000046], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:06:57.599Z>    "Contract Accepted:  Help Protect Site: " [102]
 <2026-08-08T04:06:57.600Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Go to MT SecurityCenter 4HJ-LVE-A: " [103] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000046], ObjectiveId: [00000000-0000-0000-0000-000000000047] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:06:57.600Z>    "Contract Accepted:  Help Protect Site: " [102]
+<2026-08-08T04:06:57.600Z>    "New Objective: Go to MT SecurityCenter 4HJ-LVE-A: " [103]
 <2026-08-08T04:07:11.185Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [104] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:07:11.185Z>    "Entering Armistice Zone - Combat Prohibited: " [104]
 <2026-08-08T04:08:52.243Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [105] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:08:52.243Z>    "Leaving Armistice Zone - Caution Advised: " [105]
 <2026-08-08T04:09:52.438Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id 00000000-0000-0000-0000-000000000048 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog| [Team_GameServices][Missions]
 <2026-08-08T04:09:52.439Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id 00000000-0000-0000-0000-000000000049 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|SilentUpdates| [Team_GameServices][Missions]
 <2026-08-08T04:09:52.439Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id 00000000-0000-0000-0000-000000000050 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|SilentUpdates| [Team_GameServices][Missions]
 <2026-08-08T04:09:52.445Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Clear MT SecurityCenter 4HJ-LVE-A of All Hostiles : " [106] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000046], ObjectiveId: [00000000-0000-0000-0000-000000000048] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:09:52.445Z>    "New Objective: Clear MT SecurityCenter 4HJ-LVE-A of All Hostiles : " [106]
 <2026-08-08T04:10:32.502Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000047, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to ~mission(Location)] [Team_MissionFeatures][Missions]
 <2026-08-08T04:10:32.524Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Go to MT SecurityCenter 4HJ-LVE-A
+<2026-08-08T04:10:32.524Z> : " [107] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000046], ObjectiveId: [00000000-0000-0000-0000-000000000047] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:10:32.524Z>    "Objective Complete: Go to MT SecurityCenter 4HJ-LVE-A
+<2026-08-08T04:10:32.524Z> : " [107]
 <2026-08-08T04:10:34.429Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id 00000000-0000-0000-0000-000000000051 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T04:10:34.429Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000048, flags=HiddenInUI|ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:10:34.429Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id 00000000-0000-0000-0000-000000000048 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=HiddenInUI|ShowInLog|ShowProgress| [Team_GameServices][Missions]
@@ -743,7 +1021,11 @@
 <2026-08-08T04:11:47.339Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000048, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:11:47.339Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id 00000000-0000-0000-0000-000000000048 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:13:32.210Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:13:32.210Z> : " [108] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:13:32.210Z>    "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:13:32.210Z> : " [108]
 <2026-08-08T04:13:58.411Z> [Notice] <SHUDEvent_OnNotification> Added notification "Optic Attachments - Zoom Levels: You can switch zoom levels by pressing ~action(player|interact_with_scope)" [109] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:13:58.411Z>    "Optic Attachments - Zoom Levels: You can switch zoom levels by pressing ~action(player|interact_with_scope)" [109]
 <2026-08-08T04:15:02.785Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000048, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:15:02.785Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id 00000000-0000-0000-0000-000000000048 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:15:19.687Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000048, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
@@ -767,30 +1049,74 @@
 <2026-08-08T04:16:01.463Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=phase_00000000-0000-0000-0000-000000000052, flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=0][Text=<= UNINITIALIZED =>] [Team_MissionFeatures][Missions]
 <2026-08-08T04:16:01.463Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000046 - objective_id phase_00000000-0000-0000-0000-000000000052 - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase| [Team_GameServices][Missions]
 <2026-08-08T04:16:01.487Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Complete: Help Protect Site: " [110] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000046], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:16:01.487Z>    "Contract Complete: Help Protect Site: " [110]
 <2026-08-08T04:16:02.763Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Private Property: " [111] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:16:02.763Z>    "Contract Complete: Help Protect Site: " [110]
+<2026-08-08T04:16:02.763Z>    "Entering Private Property: " [111]
 <2026-08-08T04:16:25.002Z> [Notice] <SHUDEvent_OnNotification> Added notification "FPS Harvesting - Collection: You have found a harvestable item but you don't have an armor with an inventory equipped. You cannot store this item without one." [112] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:16:25.002Z>    "FPS Harvesting - Collection: You have found a harvestable item but you don't have an armor with an inventory equipped. You cannot store this item without one." [112]
 <2026-08-08T04:16:32.929Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [113] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:16:32.929Z>    "FPS Harvesting - Collection: You have found a harvestable item but you don't have an armor with an inventory equipped. You cannot store this item without one." [112]
+<2026-08-08T04:16:32.929Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [113]
 <2026-08-08T04:18:33.591Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [114] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:18:33.591Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [114]
 <2026-08-08T04:23:28.611Z> [Notice] <SHUDEvent_OnNotification> Added notification "Multi-Tool - Tractor Beam: If the tractor beam path to the target is interrupted or blocked, the tether will break. Move carefully to prevent accidental release." [115] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:23:28.611Z>    "Multi-Tool - Tractor Beam: If the tractor beam path to the target is interrupted or blocked, the tether will break. Move carefully to prevent accidental release." [115]
 <2026-08-08T04:23:32.526Z> [Notice] <SHUDEvent_OnNotification> Added notification "Multi-Tool - Tractor Beam: Some objects are too large for the tractor beam to safely manipulate. The multi-tool's HUD will indicate if an object is an appropriate target." [116] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:23:32.526Z>    "Multi-Tool - Tractor Beam: If the tractor beam path to the target is interrupted or blocked, the tether will break. Move carefully to prevent accidental release." [115]
+<2026-08-08T04:23:32.526Z>    "Multi-Tool - Tractor Beam: Some objects are too large for the tractor beam to safely manipulate. The multi-tool's HUD will indicate if an object is an appropriate target." [116]
 <2026-08-08T04:23:35.358Z> [Notice] <SHUDEvent_OnNotification> Added notification "Multi-Tool - Tractor Beam: Attempting to move a tethered object at too sharp an angle will sever the tractor beam. Adjust carefully to prevent accidental release. " [117] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:23:35.359Z>    "Multi-Tool - Tractor Beam: Some objects are too large for the tractor beam to safely manipulate. The multi-tool's HUD will indicate if an object is an appropriate target." [116]
+<2026-08-08T04:23:35.359Z>    "Multi-Tool - Tractor Beam: Attempting to move a tethered object at too sharp an angle will sever the tractor beam. Adjust carefully to prevent accidental release. " [117]
 <2026-08-08T04:24:38.532Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:24:38.532Z> : " [118] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:24:38.532Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:24:38.532Z> : " [118]
 <2026-08-08T04:24:38.532Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:24:38.532Z> : " [119] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:24:38.532Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:24:38.532Z> : " [118]
+<2026-08-08T04:24:38.532Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:24:38.532Z> : " [119]
 <2026-08-08T04:25:30.542Z> [Notice] <SHUDEvent_OnNotification> Added notification "Multi-Tool - Tractor Beam: Both weight and distance factor into the tractor beam's ability to tether to a target. The heavier the object, the shorter the tether will need to be." [120] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:25:30.542Z>    "Multi-Tool - Tractor Beam: Both weight and distance factor into the tractor beam's ability to tether to a target. The heavier the object, the shorter the tether will need to be." [120]
 <2026-08-08T04:26:08.730Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:26:08.730Z> : " [121] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:26:08.730Z>    "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:26:08.730Z> : " [121]
 <2026-08-08T04:26:35.214Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:26:35.214Z> : " [122] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:26:35.214Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:26:35.214Z> : " [122]
 <2026-08-08T04:26:35.215Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:26:35.215Z> : " [123] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:26:35.215Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:26:35.215Z> : " [122]
+<2026-08-08T04:26:35.215Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:26:35.215Z> : " [123]
 <2026-08-08T04:27:51.305Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Member Joined
+<2026-08-08T04:27:51.305Z> TestOrg has joined the channel 'Test Ship : TestOrg'.: " [124] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:27:51.305Z>    "New Member Joined
+<2026-08-08T04:27:51.305Z> TestOrg has joined the channel 'Test Ship : TestOrg'.: " [124]
 <2026-08-08T04:28:47.968Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Private Property: " [125] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:28:47.968Z>    "Leaving Private Property: " [125]
 <2026-08-08T04:29:43.604Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Shared: Help Protect Site: " [126] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:29:43.604Z>    "Contract Shared: Help Protect Site: " [126]
 <2026-08-08T04:29:45.528Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted:  Help Protect Site: " [127] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000053], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:29:45.529Z>    "Contract Accepted:  Help Protect Site: " [127]
 <2026-08-08T04:29:45.529Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Go to MT SecurityCenter UDB-Z4W-2: " [128] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000053], ObjectiveId: [00000000-0000-0000-0000-000000000054] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:29:45.529Z>    "Contract Accepted:  Help Protect Site: " [127]
+<2026-08-08T04:29:45.529Z>    "New Objective: Go to MT SecurityCenter UDB-Z4W-2: " [128]
 <2026-08-08T04:31:39.727Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog| [Team_GameServices][Missions]
 <2026-08-08T04:31:39.727Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000056 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|SilentUpdates| [Team_GameServices][Missions]
 <2026-08-08T04:31:39.727Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000057 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=ShowInLog|SilentUpdates| [Team_GameServices][Missions]
 <2026-08-08T04:31:39.733Z> [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Clear MT SecurityCenter UDB-Z4W-2 of All Hostiles : " [129] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000053], ObjectiveId: [00000000-0000-0000-0000-000000000055] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:31:39.733Z>    "New Objective: Clear MT SecurityCenter UDB-Z4W-2 of All Hostiles : " [129]
 <2026-08-08T04:32:02.671Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000054, flags=ShowInLog|LocalOnlyObjective|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to ~mission(Location)] [Team_MissionFeatures][Missions]
 <2026-08-08T04:32:02.692Z> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Go to MT SecurityCenter UDB-Z4W-2
+<2026-08-08T04:32:02.692Z> : " [130] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000053], ObjectiveId: [00000000-0000-0000-0000-000000000054] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:32:02.692Z>    "Objective Complete: Go to MT SecurityCenter UDB-Z4W-2
+<2026-08-08T04:32:02.692Z> : " [130]
 <2026-08-08T04:32:04.175Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000058 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - flags=HiddenInUI|SilentUpdates|RespectInheritedVisibility| [Team_GameServices][Missions]
 <2026-08-08T04:32:04.175Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=HiddenInUI|ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:32:04.175Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=HiddenInUI|ShowInLog|ShowProgress| [Team_GameServices][Missions]
@@ -798,6 +1124,43 @@
 <2026-08-08T04:32:04.327Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:32:09.446Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:32:09.446Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
+<2026-08-08T04:32:25.569Z> Streamable objects/buildingsets/human/universal/prop/texture/hal/universal_shared_1_a_hal.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/vehicles/tileables/grunge/ship_mf_grungymetal_a_ddna.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/PU/decal/hightech/hightech_decal_a_ddna.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/Spaceships/Ships/AEGS/Gladius/textures/metal_painted_a_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/buildingsets/human/universal/prop/medical/heatpack/textures/heatpack_1_wear.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/buildingsets/human/universal/prop/medical/heatpack/textures/heatpack_1_ddn.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable objects/fps_weapons/weapons_v7/klwe/textures/klwe_decals_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/PU/decal/hightech/hightech_decal_a_ddna.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/fps_weapons/gadgets/crlf/textures/crlf_pom_ddn.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/vehicles/tileables/grunge/ship_mf_grungymetal_a_ddna.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/buildingsets/human/universal/prop/medical/heatpack/textures/heatpack_1_hal.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/fps_weapons/attachments/sights_scopes/Textures/lens_01_ddn.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/vehicles/tileables/LargeScale/ship_mf_ls_ genericgrime_a.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/vehicles/tileables/metal/ship_mf_raw_iron_a_spec.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable objects/fps_weapons/weapons_v7/klwe/textures/klwe_decals_ddn.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Materials/Decals/bullet_shell/bullet_shell_set_b_displ.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/PU/decal/hightech/hightech_decal_a_spec.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/lights/light_fill_a.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Materials/Decals/bullet_shell/bullet_shell_set_b_ddna.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/fps_weapons/gadgets/grin/multitool/textures/gdgt_grin_multitool_decal_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/fps_weapons/gadgets/crlf/textures/crlf_pom_displ.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable objects/fps_weapons/weapons_v7/ksar/textures/ksar_logo_stencil.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable textures/glass/glass_pbr/glass_screen_1_a_mask_c.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/decals/streaks/dirt_streak001h_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable objects/fps_weapons/attachments/sights_scopes/textures/lens_01_dif.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/PU/decal/hightech/hightech_decal_a_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Materials/Decals/bullet_shell/bullet_shell_set_b_ddna.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/glass/glass_pbr/displayscreen_mask_1_a_mask.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Materials/Decals/bullet_shell/bullet_shell_set_b_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/PU/decal/hightech/hightech_decal_a_displ.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/decals/scratches/scratches001a_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/planets/surface/ground/snow_01/snow_01_basic_a_ddna.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/fps_weapons/gadgets/grin/multitool/textures/gdgt_grin_multitool_pom_displ.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/planets/flora/tree/spruce_01/spruce_01_bark_displ.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/fps_weapons/gadgets/crlf/textures/crlf_pom_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Objects/Spaceships/Weapons/BEHR/Textures/behr_graphic_decals_a_diff.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
+<2026-08-08T04:32:25.569Z> Streamable Textures/PU/panels/detailmaps/panel_plating_c_detail.dds has failed streaming 3 times - disabling from streaming to prevent potential log spam
 <2026-08-08T04:32:31.712Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:32:31.712Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:32:32.759Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
@@ -807,9 +1170,13 @@
 <2026-08-08T04:32:35.182Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:32:35.182Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:32:36.057Z> [Notice] <SHUDEvent_OnNotification> Added notification "Awarded 500 aUEC: " [131] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:32:36.057Z>    "Awarded 500 aUEC: " [131]
 <2026-08-08T04:32:37.044Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:32:37.044Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:34:29.566Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:34:29.566Z> : " [132] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:34:29.566Z>    "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:34:29.566Z> : " [132]
 <2026-08-08T04:35:02.407Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:35:02.407Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:35:04.307Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
@@ -817,60 +1184,197 @@
 <2026-08-08T04:35:16.457Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:35:16.457Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:35:17.672Z> [Notice] <SHUDEvent_OnNotification> Added notification "Awarded 500 aUEC: " [133] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:17.672Z>    "Awarded 500 aUEC: " [133]
 <2026-08-08T04:35:30.235Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=00000000-0000-0000-0000-000000000055, flags=ShowInLog|ShowProgress|, hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Hostiles Remaining] [Team_MissionFeatures][Missions]
 <2026-08-08T04:35:30.235Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id 00000000-0000-0000-0000-000000000055 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 0 - flags=ShowInLog|ShowProgress| [Team_GameServices][Missions]
 <2026-08-08T04:35:41.577Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective updated id=phase_00000000-0000-0000-0000-000000000052, flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase|, hidden=1, hiddenInUI=1, markerHidden=0, uiDisplay[Priority=0][Text=<= UNINITIALIZED =>] [Team_MissionFeatures][Missions]
 <2026-08-08T04:35:41.577Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id 00000000-0000-0000-0000-000000000053 - objective_id phase_00000000-0000-0000-0000-000000000052 - state MISSION_OBJECTIVE_STATE_FAILED - created 0 - flags=Hidden|HiddenInUI|SilentUpdates|IgnoredForInheritedVisibility|OverallPhase| [Team_GameServices][Missions]
 <2026-08-08T04:35:41.603Z> [Notice] <SHUDEvent_OnNotification> Added notification "Crime Committed: Homicide
+<2026-08-08T04:35:41.603Z> against Agnolo Ruger: " [134] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:41.603Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:41.603Z> against Agnolo Ruger: " [134]
 <2026-08-08T04:35:41.603Z> [Notice] <SHUDEvent_OnNotification> Added notification "Journal Entry Added: Criminal Record: " [135] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:41.603Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:41.603Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:41.603Z>    "Journal Entry Added: Criminal Record: " [135]
 <2026-08-08T04:35:41.603Z> [Notice] <SHUDEvent_OnNotification> Added notification "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136] to queue. New queue size: 3, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:41.603Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:41.603Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:41.603Z>    "Journal Entry Added: Criminal Record: " [135]
+<2026-08-08T04:35:41.603Z>    "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136]
 <2026-08-08T04:35:41.603Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Failed: Help Protect Site: " [137] to queue. New queue size: 4, MissionId: [00000000-0000-0000-0000-000000000053], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:41.603Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:41.603Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:41.603Z>    "Journal Entry Added: Criminal Record: " [135]
+<2026-08-08T04:35:41.603Z>    "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136]
+<2026-08-08T04:35:41.603Z>    "Contract Failed: Help Protect Site: " [137]
 <2026-08-08T04:35:41.649Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat Rating Increased: " [138] to queue. New queue size: 5, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:41.649Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:41.649Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:41.649Z>    "Journal Entry Added: Criminal Record: " [135]
+<2026-08-08T04:35:41.649Z>    "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136]
+<2026-08-08T04:35:41.649Z>    "Contract Failed: Help Protect Site: " [137]
+<2026-08-08T04:35:41.649Z>    "CrimeStat Rating Increased: " [138]
 <2026-08-08T04:35:42.418Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Private Property: " [139] to queue. New queue size: 6, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:42.418Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:42.418Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:42.418Z>    "Journal Entry Added: Criminal Record: " [135]
+<2026-08-08T04:35:42.418Z>    "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136]
+<2026-08-08T04:35:42.418Z>    "Contract Failed: Help Protect Site: " [137]
+<2026-08-08T04:35:42.418Z>    "CrimeStat Rating Increased: " [138]
+<2026-08-08T04:35:42.418Z>    "Entering Private Property: " [139]
 <2026-08-08T04:35:42.574Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat: You've gained a CrimeStat level by committing an infraction in monitored space. Your current CrimeStat level is displayed on your HUD." [140] to queue. New queue size: 7, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:42.574Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:42.574Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:42.574Z>    "Journal Entry Added: Criminal Record: " [135]
+<2026-08-08T04:35:42.574Z>    "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136]
+<2026-08-08T04:35:42.574Z>    "Contract Failed: Help Protect Site: " [137]
+<2026-08-08T04:35:42.574Z>    "CrimeStat Rating Increased: " [138]
+<2026-08-08T04:35:42.574Z>    "Entering Private Property: " [139]
+<2026-08-08T04:35:42.576Z>    "CrimeStat: You've gained a CrimeStat level by committing an infraction in monitored space. Your current CrimeStat level is displayed on your HUD." [140]
 <2026-08-08T04:35:43.686Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat: The higher your CrimeStat level, the more hostility you'll encounter from local Security." [141] to queue. New queue size: 7, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:43.686Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:43.686Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:43.686Z>    "Journal Entry Added: Criminal Record: " [135]
+<2026-08-08T04:35:43.686Z>    "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136]
+<2026-08-08T04:35:43.686Z>    "Contract Failed: Help Protect Site: " [137]
+<2026-08-08T04:35:43.686Z>    "CrimeStat Rating Increased: " [138]
+<2026-08-08T04:35:43.686Z>    "Entering Private Property: " [139]
+<2026-08-08T04:35:43.686Z>    "CrimeStat: The higher your CrimeStat level, the more hostility you'll encounter from local Security." [141]
 <2026-08-08T04:35:44.027Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat: Your CrimeStat level can limit which contracts are available. Crimestat levels can be legally removed by paying fines or serving jail time." [142] to queue. New queue size: 7, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:44.027Z>    "Crime Committed: Homicide
+<2026-08-08T04:35:44.027Z> against Agnolo Ruger: " [134]
+<2026-08-08T04:35:44.027Z>    "Journal Entry Added: Criminal Record: " [135]
+<2026-08-08T04:35:44.027Z>    "Journal Entry Added: Fixing Your Little CrimeStat Problem: " [136]
+<2026-08-08T04:35:44.027Z>    "Contract Failed: Help Protect Site: " [137]
+<2026-08-08T04:35:44.027Z>    "CrimeStat Rating Increased: " [138]
+<2026-08-08T04:35:44.027Z>    "Entering Private Property: " [139]
+<2026-08-08T04:35:44.027Z>    "CrimeStat: Your CrimeStat level can limit which contracts are available. Crimestat levels can be legally removed by paying fines or serving jail time." [142]
 <2026-08-08T04:35:57.889Z> [Notice] <SHUDEvent_OnNotification> Added notification "Crime Committed: Aggravated Assault
+<2026-08-08T04:35:57.889Z> against Daxesh "Sonic" Maglione: " [143] to queue. New queue size: 5, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:35:57.889Z>    "Contract Failed: Help Protect Site: " [137]
+<2026-08-08T04:35:57.889Z>    "CrimeStat Rating Increased: " [138]
+<2026-08-08T04:35:57.889Z>    "Entering Private Property: " [139]
+<2026-08-08T04:35:57.889Z>    "Crime Committed: Aggravated Assault
+<2026-08-08T04:35:57.889Z> against Daxesh "Sonic" Maglione: " [143]
+<2026-08-08T04:35:57.889Z>    "CrimeStat: Your CrimeStat level can limit which contracts are available. Crimestat levels can be legally removed by paying fines or serving jail time." [142]
 <2026-08-08T04:36:30.044Z> [Notice] <SHUDEvent_OnNotification> Added notification "Multi-Tool Healing: You can heal a target over a short distance using the Multi-Tool Healing Attachment." [144] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:36:30.044Z>    "CrimeStat: Your CrimeStat level can limit which contracts are available. Crimestat levels can be legally removed by paying fines or serving jail time." [142]
+<2026-08-08T04:36:30.044Z>    "Multi-Tool Healing: You can heal a target over a short distance using the Multi-Tool Healing Attachment." [144]
 <2026-08-08T04:36:30.889Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Device: Choose who to heal by toggling between targeting yourself and other injured individuals." [145] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:36:30.889Z>    "Multi-Tool Healing: You can heal a target over a short distance using the Multi-Tool Healing Attachment." [144]
+<2026-08-08T04:36:30.889Z>    "Medical Device: Choose who to heal by toggling between targeting yourself and other injured individuals." [145]
 <2026-08-08T04:36:31.709Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Device: Apply drugs to alleviate injury symptoms and improve the health of an injured target. Note that this increases the target’s Blood Drug Level (BDL)." [146] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:36:31.709Z>    "Medical Device: Choose who to heal by toggling between targeting yourself and other injured individuals." [145]
+<2026-08-08T04:36:31.709Z>    "Medical Device: Apply drugs to alleviate injury symptoms and improve the health of an injured target. Note that this increases the target’s Blood Drug Level (BDL)." [146]
 <2026-08-08T04:39:18.702Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Device: Additional information regarding a target's current health status can found in the Medical Device's AR display." [147] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:39:18.702Z>    "Medical Device: Additional information regarding a target's current health status can found in the Medical Device's AR display." [147]
 <2026-08-08T04:39:43.485Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat: You've gained a CrimeStat level by committing an infraction in monitored space. Your current CrimeStat level is displayed on your HUD." [148] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:39:43.485Z>    "CrimeStat: You've gained a CrimeStat level by committing an infraction in monitored space. Your current CrimeStat level is displayed on your HUD." [148]
 <2026-08-08T04:39:44.539Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat: The higher your CrimeStat level, the more hostility you'll encounter from local Security." [149] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:39:44.539Z>    "CrimeStat: You've gained a CrimeStat level by committing an infraction in monitored space. Your current CrimeStat level is displayed on your HUD." [148]
+<2026-08-08T04:39:44.539Z>    "CrimeStat: The higher your CrimeStat level, the more hostility you'll encounter from local Security." [149]
 <2026-08-08T04:39:45.710Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat: Your CrimeStat level can limit which contracts are available. Crimestat levels can be legally removed by paying fines or serving jail time." [150] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:39:45.710Z>    "CrimeStat: The higher your CrimeStat level, the more hostility you'll encounter from local Security." [149]
+<2026-08-08T04:39:45.710Z>    "CrimeStat: Your CrimeStat level can limit which contracts are available. Crimestat levels can be legally removed by paying fines or serving jail time." [150]
 <2026-08-08T04:40:31.875Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:40:31.875Z> : " [151] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:40:31.875Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:40:31.875Z> : " [151]
 <2026-08-08T04:40:31.875Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:40:31.875Z> : " [152] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:40:31.875Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:40:31.875Z> : " [151]
+<2026-08-08T04:40:31.875Z>    "You have joined channel 'Test Ship : TestOrg'.
+<2026-08-08T04:40:31.875Z> : " [152]
 <2026-08-08T04:41:00.625Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Private Property: " [153] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:41:00.625Z>    "Leaving Private Property: " [153]
 <2026-08-08T04:42:17.522Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered UEE Jurisdiction: " [154] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:42:17.522Z>    "Entered UEE Jurisdiction: " [154]
 <2026-08-08T04:42:22.087Z> [Notice] <SHUDEvent_OnNotification> Added notification "Exited Monitored Space: " [155] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:42:22.087Z>    "Entered UEE Jurisdiction: " [154]
+<2026-08-08T04:42:22.087Z>    "Exited Monitored Space: " [155]
 <2026-08-08T04:44:23.822Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered microTech Jurisdiction: " [156] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:44:23.822Z>    "Entered microTech Jurisdiction: " [156]
 <2026-08-08T04:44:42.954Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [157] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:44:42.954Z>    "Entered Monitored Space: " [157]
 <2026-08-08T04:45:16.967Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [158] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:45:16.967Z>    "Entering Armistice Zone - Combat Prohibited: " [158]
 <2026-08-08T04:45:21.620Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:46:15.096Z> [Notice] <SHUDEvent_OnNotification> Added notification "Leaving Armistice Zone - Caution Advised: " [159] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:46:15.096Z>    "Leaving Armistice Zone - Caution Advised: " [159]
 <2026-08-08T04:48:37.171Z> [Notice] <SHUDEvent_OnNotification> Added notification "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:48:37.171Z> : " [160] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:48:37.171Z>    "You have left the channel 'Test Ship : TestOrg'.
+<2026-08-08T04:48:37.171Z> : " [160]
 <2026-08-08T04:49:33.923Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:49:47.679Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:50:17.142Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:50:30.736Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [161] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:50:30.736Z>    "Entering Armistice Zone - Combat Prohibited: " [161]
 <2026-08-08T04:50:50.993Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [162] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:50:50.993Z>    "Entering Armistice Zone - Combat Prohibited: " [162]
 <2026-08-08T04:51:04.761Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [163] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:51:04.761Z>    "Entering Armistice Zone - Combat Prohibited: " [163]
 <2026-08-08T04:51:12.208Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [164] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:51:12.208Z>    "Entering Armistice Zone - Combat Prohibited: " [164]
 <2026-08-08T04:51:35.268Z> [Notice] <SHUDEvent_OnNotification> Added notification "Fined 32000 UEC: " [165] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:51:35.268Z>    "Fined 32000 UEC: " [165]
 <2026-08-08T04:54:03.408Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [166] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:54:03.408Z>    "Entered Monitored Space: " [166]
 <2026-08-08T04:54:03.409Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:54:03.476Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [168] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:54:03.476Z>    "Entered Monitored Space: " [166]
+<2026-08-08T04:54:03.476Z>    "Entering Armistice Zone - Combat Prohibited: " [168]
 <2026-08-08T04:54:03.476Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [169] to queue. New queue size: 3, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:54:03.476Z>    "Entered Monitored Space: " [166]
+<2026-08-08T04:54:03.476Z>    "Entering Armistice Zone - Combat Prohibited: " [168]
+<2026-08-08T04:54:03.476Z>    "Entering Armistice Zone - Combat Prohibited: " [169]
 <2026-08-08T04:54:17.960Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered microTech Jurisdiction: " [170] to queue. New queue size: 4, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:54:17.960Z>    "Entered Monitored Space: " [166]
+<2026-08-08T04:54:17.960Z>    "Entering Armistice Zone - Combat Prohibited: " [168]
+<2026-08-08T04:54:17.960Z>    "Entering Armistice Zone - Combat Prohibited: " [169]
+<2026-08-08T04:54:17.960Z>    "Entered microTech Jurisdiction: " [170]
 <2026-08-08T04:54:17.960Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat Rating Increased: " [171] to queue. New queue size: 5, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:54:17.960Z>    "Entered Monitored Space: " [166]
+<2026-08-08T04:54:17.960Z>    "Entering Armistice Zone - Combat Prohibited: " [168]
+<2026-08-08T04:54:17.960Z>    "Entering Armistice Zone - Combat Prohibited: " [169]
+<2026-08-08T04:54:17.960Z>    "Entered microTech Jurisdiction: " [170]
+<2026-08-08T04:54:17.960Z>    "CrimeStat Rating Increased: " [171]
 <2026-08-08T04:54:43.619Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [172] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:54:43.619Z>    "CrimeStat Rating Increased: " [171]
+<2026-08-08T04:54:43.619Z>    "Entering Armistice Zone - Combat Prohibited: " [172]
 <2026-08-08T04:55:06.119Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [173] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:06.119Z>    "Entering Armistice Zone - Combat Prohibited: " [173]
 <2026-08-08T04:55:14.127Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [174] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:14.127Z>    "Entering Armistice Zone - Combat Prohibited: " [174]
 <2026-08-08T04:55:35.165Z> [Notice] <SHUDEvent_OnNotification> Added notification "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [175] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:35.165Z>    "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab to heal injuries (depending on tier), and the Medication tab for dosage." [175]
 <2026-08-08T04:55:47.906Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Monitored Space: " [176] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:47.906Z>    "Entered Monitored Space: " [176]
 <2026-08-08T04:55:47.957Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [178] to queue. New queue size: 2, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:47.957Z>    "Entered Monitored Space: " [176]
+<2026-08-08T04:55:47.957Z>    "Entering Armistice Zone - Combat Prohibited: " [178]
 <2026-08-08T04:55:47.957Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entering Armistice Zone - Combat Prohibited: " [179] to queue. New queue size: 3, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:47.957Z>    "Entered Monitored Space: " [176]
+<2026-08-08T04:55:47.957Z>    "Entering Armistice Zone - Combat Prohibited: " [178]
+<2026-08-08T04:55:47.957Z>    "Entering Armistice Zone - Combat Prohibited: " [179]
 <2026-08-08T04:55:48.381Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Hurston Dynamics Jurisdiction: " [180] to queue. New queue size: 4, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:48.381Z>    "Entered Monitored Space: " [176]
+<2026-08-08T04:55:48.381Z>    "Entering Armistice Zone - Combat Prohibited: " [178]
+<2026-08-08T04:55:48.381Z>    "Entering Armistice Zone - Combat Prohibited: " [179]
+<2026-08-08T04:55:48.381Z>    "Entered Hurston Dynamics Jurisdiction: " [180]
 <2026-08-08T04:55:48.381Z> [Notice] <SHUDEvent_OnNotification> Added notification "CrimeStat Rating Increased: " [181] to queue. New queue size: 5, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:48.381Z>    "Entered Monitored Space: " [176]
+<2026-08-08T04:55:48.381Z>    "Entering Armistice Zone - Combat Prohibited: " [178]
+<2026-08-08T04:55:48.381Z>    "Entering Armistice Zone - Combat Prohibited: " [179]
+<2026-08-08T04:55:48.381Z>    "Entered Hurston Dynamics Jurisdiction: " [180]
+<2026-08-08T04:55:48.381Z>    "CrimeStat Rating Increased: " [181]
 <2026-08-08T04:55:48.691Z> [Notice] <RequestLocationInventory> Player[TestPilot] requested inventory for Location[PrisonMine_Stanton1b] [Team_CoreGameplayFeatures][Inventory]
 <2026-08-08T04:55:58.014Z> [Notice] <SHUDEvent_OnNotification> Added notification "Entered Klescher Rehabilitation Jurisdiction: " [182] to queue. New queue size: 4, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]
+<2026-08-08T04:55:58.014Z>    "Entering Armistice Zone - Combat Prohibited: " [179]
+<2026-08-08T04:55:58.014Z>    "Entered Hurston Dynamics Jurisdiction: " [180]
+<2026-08-08T04:55:58.014Z>    "CrimeStat Rating Increased: " [181]
+<2026-08-08T04:55:58.014Z>    "Entered Klescher Rehabilitation Jurisdiction: " [182]
+<2026-08-08T03:21:45.123Z> [Notice] <SHUDEvent_OnNotification> Added notification "Test wrapped
+ message that spans two lines".
