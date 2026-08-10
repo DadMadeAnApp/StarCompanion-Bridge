@@ -36,3 +36,19 @@ def iter_records(lines: Iterable[str]) -> Iterator[str]:
         # A continuation with no record open is orphaned mid-file; drop it.
     if current:
         yield "".join(current).rstrip("\n")
+
+
+# DOTALL: the quoted text can contain the newline that wrapped the record.
+_NOTIFICATION = re.compile(
+    r"<SHUDEvent_OnNotification> Added notification \"(?P<text>.*)\" \[\d+\] to queue\..*?"
+    r"MissionId: \[(?P<mission>[0-9a-f-]+)\]",
+    re.DOTALL,
+)
+
+
+def parse_notification(record: str) -> dict | None:
+    """HUD notification text, verbatim including any trailing colon."""
+    m = _NOTIFICATION.search(record)
+    if not m:
+        return None
+    return {"text": m.group("text"), "missionId": m.group("mission")}
