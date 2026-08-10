@@ -70,6 +70,14 @@ import websockets
 from pynput.keyboard import Key, KeyCode, Controller
 from pynput.mouse import Button, Controller as MouseController
 
+from telemetry.parsers import FeedRouter
+from telemetry.session import TelemetrySession
+from telemetry.tailer import LogTailer, default_log_path
+
+PARSER_BUILD = "12344265"   # the build these parsers were verified against
+TELEMETRY_MAX_PER_SECOND = 20   # backstop only; observed peak is well under 2/min
+_log_path_override: Path | None = None
+
 # ── Config ─────────────────────────────────────────────────────────────────────
 PORT = 8765
 MAX_HOLD_SECONDS = 10.0      # a stuck hold means a stuck key in-game
@@ -591,6 +599,10 @@ async def _dispatch(msg: dict) -> tuple[bool, str | None]:
     if kind == "ping":
         return True, None
 
+    if kind in ("subscribe", "unsubscribe"):
+        # Handled in the connection handler, which owns per-connection state.
+        return True, None
+
     return False, f"unknown message type {kind!r}"
 
 
@@ -668,6 +680,39 @@ def make_handler(token: str | None):
         logging.info(f"App connected  {peer}")
         pending: set[asyncio.Task] = set()
 
+        log_path = _log_path_override or default_log_path()
+        tailer = LogTailer(log_path) if log_path else None
+        session = TelemetrySession(
+            game_build=tailer.game_build if tailer else None,
+            parser_build=PARSER_BUILD,
+            log_found=tailer is not None,
+        )
+        feed_task: asyncio.Task | None = None
+
+        async def pump() -> None:
+            """Forward whitelisted records to this connection until it closes."""
+            router = FeedRouter()
+            limiter_out = _RateLimiter(TELEMETRY_MAX_PER_SECOND)
+            try:
+                async for record in tailer.watch():
+                    routed = router.route(record)
+                    if not routed:
+                        continue
+                    if not limiter_out.allow():
+                        # Dropping creates a seq gap, which the app surfaces.
+                        logging.warning("Telemetry rate cap hit — frame dropped")
+                        continue
+                    feed, event = routed
+                    ts = record[1:record.index(">")] if ">" in record else ""
+                    frame = session.next_frame(feed, event, ts)
+                    if frame:
+                        with contextlib.suppress(Exception):
+                            await ws.send(json.dumps(frame))
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                logging.warning(f"Telemetry pump stopped: {e}")
+
         try:
             async for raw in ws:
                 if len(raw) > MAX_MESSAGE_BYTES:
@@ -686,6 +731,18 @@ def make_handler(token: str | None):
                     logging.warning(f"Expected a JSON object, got {type(msg).__name__}")
                     continue
 
+                if msg.get("type") in ("subscribe", "unsubscribe"):
+                    req_id = msg.get("id", 0)
+                    if msg["type"] == "subscribe":
+                        ack = session.subscribe(msg.get("feeds", []), req_id)
+                        if ack["ok"] and feed_task is None and tailer is not None:
+                            feed_task = asyncio.create_task(pump())
+                    else:
+                        ack = session.unsubscribe(req_id)
+                    with contextlib.suppress(Exception):
+                        await ws.send(json.dumps(ack))
+                    continue
+
                 # Run the command as a task so a multi-second hold doesn't
                 # stall reads; _input_lock keeps the injections ordered.
                 task = asyncio.create_task(_run_command(ws, msg))
@@ -701,6 +758,10 @@ def make_handler(token: str | None):
             if pending:
                 # Let the cancelled holds run their release handlers.
                 await asyncio.gather(*pending, return_exceptions=True)
+            if feed_task is not None:
+                feed_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await feed_task
             logging.info(f"App disconnected  {peer}")
 
     return handle
