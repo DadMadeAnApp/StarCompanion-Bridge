@@ -39,8 +39,10 @@ def iter_records(lines: Iterable[str]) -> Iterator[str]:
 
 
 # DOTALL: the quoted text can contain the newline that wrapped the record.
+# Non-greedy text capture (.*?) bounded by the real delimiter "] to queue" to
+# prevent cross-notification capture when two notifications share one assembled record.
 _NOTIFICATION = re.compile(
-    r"<SHUDEvent_OnNotification> Added notification \"(?P<text>.*)\" \[\d+\] to queue\..*?"
+    r"<SHUDEvent_OnNotification> Added notification \"(?P<text>.*?)\" \[\d+\] to queue\..*?"
     r"MissionId: \[(?P<mission>[0-9a-f-]+)\]",
     re.DOTALL,
 )

@@ -136,9 +136,10 @@ def main(src: str, dest: str) -> None:
     # continuations (with the same time but no [LEVEL] marker), but Task 2 and Task 6
     # tests need at least one record where the continuation is completely timestamp-less
     # to exercise the full assembly logic. This is synthetic and serves the test.
+    # Must be complete and parseable by parse_notification().
     synthetic_record = [
         f'<2026-08-08T03:21:45.123Z> [Notice] <SHUDEvent_OnNotification> Added notification "Test wrapped\n',
-        f' message that spans two lines".\n',
+        f' message that spans two lines" [1] to queue. New queue size: 1, MissionId: [99999999-9999-9999-9999-999999999999], ObjectiveId: []\n',
     ]
     out.extend(synthetic_record)
 

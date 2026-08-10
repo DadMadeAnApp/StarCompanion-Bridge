@@ -72,6 +72,17 @@ class NotificationTests(unittest.TestCase):
         record = "<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> Added notification but truncated"
         self.assertIsNone(parsers.parse_notification(record))
 
+    def test_two_notifications_in_one_record_returns_the_first(self):
+        record = (
+            '<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> Added notification '
+            '"First" [1] to queue. New queue size: 1, MissionId: [11111111-1111-1111-1111-111111111111], ObjectiveId: []\n'
+            '<2026-08-08T02:44:59.362Z> [Notice] <SHUDEvent_OnNotification> Added notification '
+            '"Second" [2] to queue. New queue size: 2, MissionId: [22222222-2222-2222-2222-222222222222], ObjectiveId: []'
+        )
+        event = parsers.parse_notification(record)
+        self.assertEqual(event["text"], "First")
+        self.assertEqual(event["missionId"], "11111111-1111-1111-1111-111111111111")
+
 
 if __name__ == "__main__":
     unittest.main()

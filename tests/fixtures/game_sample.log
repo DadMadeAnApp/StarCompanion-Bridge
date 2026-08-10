@@ -1377,4 +1377,4 @@
 <2026-08-08T04:55:58.014Z>    "CrimeStat Rating Increased: " [181]
 <2026-08-08T04:55:58.014Z>    "Entered Klescher Rehabilitation Jurisdiction: " [182]
 <2026-08-08T03:21:45.123Z> [Notice] <SHUDEvent_OnNotification> Added notification "Test wrapped
- message that spans two lines".
+ message that spans two lines" [1] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000059], ObjectiveId: []
