@@ -144,6 +144,47 @@ class ObjectiveTests(unittest.TestCase):
         table.ingest(hidden_upsert)
         self.assertIsNone(table.ingest(TEXT.replace("flags=ShowInLog|", "flags=Hidden|")))
 
+    def test_emitted_event_is_order_independent(self):
+        table_upsert_first = parsers.ObjectiveTable()
+        table_upsert_first.ingest(UPSERT)
+        event_upsert_first = table_upsert_first.ingest(TEXT)
+
+        table_text_first = parsers.ObjectiveTable()
+        table_text_first.ingest(TEXT)
+        event_text_first = table_text_first.ingest(UPSERT)
+
+        self.assertIsNotNone(event_upsert_first)
+        self.assertEqual(event_upsert_first, event_text_first)
+
+    def test_hidden_in_either_half_suppresses_regardless_of_order(self):
+        hidden_text = TEXT.replace("flags=ShowInLog|", "flags=Hidden|")
+
+        table_upsert_first = parsers.ObjectiveTable()
+        table_upsert_first.ingest(UPSERT)
+        self.assertIsNone(table_upsert_first.ingest(hidden_text))
+
+        table_text_first = parsers.ObjectiveTable()
+        table_text_first.ingest(hidden_text)
+        self.assertIsNone(table_text_first.ingest(UPSERT))
+
+    def test_partial_table_is_capped_and_evicts_oldest(self):
+        table = parsers.ObjectiveTable()
+        for i in range(600):
+            objective_id = f"{i:08x}-0000-0000-0000-000000000000"
+            record = UPSERT.replace(
+                "04430bfc-cf39-c4e1-84c8-7203dacbc9a7", objective_id
+            )
+            table.ingest(record)
+        self.assertEqual(len(table._partial), 512)
+
+        # The very first objective's upsert half was evicted, so its matching
+        # text arriving now cannot complete a pair - it just starts a new one.
+        evicted_id = "00000000-0000-0000-0000-000000000000"
+        evicted_text = TEXT.replace(
+            "04430bfc-cf39-c4e1-84c8-7203dacbc9a7", evicted_id
+        )
+        self.assertIsNone(table.ingest(evicted_text))
+
 
 if __name__ == "__main__":
     unittest.main()

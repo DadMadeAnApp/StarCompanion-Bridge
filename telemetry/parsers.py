@@ -105,12 +105,24 @@ def parse_objective_text(record: str) -> dict | None:
     }
 
 
+_PARTIAL_CAP = 512
+
+
 class ObjectiveTable:
     """Joins the two tags that together describe one objective.
 
     <ObjectiveUpserted> carries state but no text; the text is on a separate
     <CMissionLogEntry::UpdateActiveObjective> line keyed by objective id. Either
     may arrive first, and a half that never completes is never emitted.
+
+    Both halves carry their own `flags`/`hiddenInUI`, and they can disagree.
+    Rather than let whichever half arrives second silently overwrite the
+    other's visibility signal, the two are unioned and 'hidden' is sticky:
+    once either half says hidden, later data can never revive it.
+
+    `_partial` is bounded to `_PARTIAL_CAP` entries (oldest-inserted evicted
+    first) so a long session's permanently-unpaired halves cannot grow this
+    table without bound. No clock/TTL — this module stays I/O-free.
     """
 
     def __init__(self) -> None:
@@ -131,16 +143,42 @@ class ObjectiveTable:
     def ingest(self, record: str) -> dict | None:
         """Feed one record. Returns a complete, visible objective or None."""
         upsert = parse_objective_upserted(record)
-        if upsert:
-            merged = {**self._partial.get(upsert["objectiveId"], {}), **upsert}
+        is_upsert = upsert is not None
+        if is_upsert:
+            new_half = upsert
         else:
-            text = parse_objective_text(record)
-            if not text:
+            new_half = parse_objective_text(record)
+            if not new_half:
                 return None
-            merged = {**self._partial.get(text["objectiveId"], {}), **text}
 
-        objective_id = merged["objectiveId"]
+        objective_id = new_half["objectiveId"]
+        existing = self._partial.get(objective_id, {})
+
+        merged = {**existing, **new_half}
+        # Keep each half's raw flags/hiddenInUI keyed by half, not by arrival
+        # order, so the union below always combines them in the same
+        # (upsert, text) order and the emitted event is identical regardless
+        # of which half arrived first.
+        if is_upsert:
+            merged["_upsertFlags"] = new_half.get("flags", [])
+            merged["_upsertHiddenInUI"] = new_half.get("hiddenInUI", False)
+            merged.setdefault("_textFlags", existing.get("_textFlags", []))
+            merged.setdefault("_textHiddenInUI", existing.get("_textHiddenInUI", False))
+        else:
+            merged["_textFlags"] = new_half.get("flags", [])
+            merged["_textHiddenInUI"] = new_half.get("hiddenInUI", False)
+            merged.setdefault("_upsertFlags", existing.get("_upsertFlags", []))
+            merged.setdefault("_upsertHiddenInUI", existing.get("_upsertHiddenInUI", False))
+
+        merged["flags"] = list(
+            dict.fromkeys([*merged["_upsertFlags"], *merged["_textFlags"]])
+        )
+        merged["hiddenInUI"] = merged["_upsertHiddenInUI"] or merged["_textHiddenInUI"]
+
         if "state" not in merged or "textRaw" not in merged:
+            if objective_id not in self._partial and len(self._partial) >= _PARTIAL_CAP:
+                oldest = next(iter(self._partial))
+                self._partial.pop(oldest)
             self._partial[objective_id] = merged
             return None
 
