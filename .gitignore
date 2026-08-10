@@ -16,3 +16,5 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+Game.log
+.DS_Store
