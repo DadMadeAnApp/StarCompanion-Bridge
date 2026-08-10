@@ -98,6 +98,39 @@ out by its own stale sockets.
 
 ---
 
+## Live telemetry
+
+The bridge can tail Star Citizen's `Game.log` and forward three feeds to the app: mission
+objectives, HUD notifications, and location context. **This has not yet been verified against
+a running game** — it's built and unit-tested against captured log fixtures, but nobody has
+confirmed the frames it produces match what a live session actually logs.
+
+**Opt-in per connection**: the bridge reads nothing and sends nothing until an app
+subscribes. A connection that never sends a `subscribe` message gets no telemetry traffic at
+all.
+
+**Only the live log**: the bridge tails the current `Game.log` only. It never opens anything
+under `logbackups\`.
+
+**Read-only, local-only**: the bridge never writes to `Game.log`, and nothing it reads is
+uploaded anywhere — the three feeds go only to the app connected over your local network.
+
+**Privacy**: the account id and character GEID are stripped before a frame ever leaves the
+machine. If you ever see either value in a frame, that's a bug — please report it.
+
+**Non-default install path**: the bridge auto-detects the default Star Citizen install
+location. If yours lives somewhere else, point it at the log directly:
+
+```
+python bridge_server.py --log "F:\Robert Space Industries\StarCitizen\LIVE\Game.log"
+```
+
+Note the folder is **"Robert Space Industries"**, not "Roberts" — an easy typo. Passing
+`--log` with a path that doesn't exist fails immediately at startup with an error, rather than
+silently falling back to auto-detection.
+
+---
+
 ## Running the script directly
 
 Requires Python 3.10 or later — download from [python.org](https://www.python.org/downloads/).
@@ -112,6 +145,8 @@ Options:
 
 ```
 --port N             listen on a different port (default 8765)
+--log PATH           read Game.log from PATH instead of auto-detecting it
+                      (see "Live telemetry" below)
 ```
 
 ---

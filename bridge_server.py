@@ -861,11 +861,23 @@ def _parse_options() -> int:
         "--port", type=int, default=PORT,
         help=f"port to listen on (default {PORT})",
     )
+    parser.add_argument(
+        "--log", type=str, default=None, dest="log_path",
+        help="path to Game.log, for installs outside the default location "
+             "(default: auto-detected)",
+    )
     # Ignore unrecognised args rather than exiting — a stray argument from a
     # shortcut or file association shouldn't stop the bridge from starting.
     args, unknown = parser.parse_known_args()
     if unknown:
         print(f"[warn] ignoring unrecognised argument(s): {' '.join(unknown)}")
+
+    global _log_path_override
+    if args.log_path is not None:
+        candidate = Path(args.log_path)
+        if not candidate.exists():
+            _refuse_bad_log_path(candidate)
+        _log_path_override = candidate
 
     # Loudly reject the retired opt-outs rather than ignoring them: someone
     # using one believes the bridge is unauthenticated, and silently starting
@@ -879,6 +891,16 @@ def _parse_options() -> int:
         _refuse_no_auth(f"The INSECURE_NO_AUTH file is no longer supported.\nDelete it: {sentinel}")
 
     return args.port
+
+
+def _refuse_bad_log_path(candidate: Path) -> None:
+    print(f"\nERROR: --log path does not exist: {candidate}")
+    print("Not falling back to auto-detection — check the path and try again.")
+    # The pause is for a double-clicked window; suppress EOFError so a piped
+    # or headless run exits cleanly instead of dumping a traceback.
+    with contextlib.suppress(EOFError):
+        input("\nPress Enter to close...")
+    sys.exit(1)
 
 
 def _refuse_no_auth(detail: str) -> None:
