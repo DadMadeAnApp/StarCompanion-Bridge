@@ -83,6 +83,29 @@ class NotificationTests(unittest.TestCase):
         record = "<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> Added notification but truncated"
         self.assertIsNone(parsers.parse_notification(record))
 
+    def test_first_notifications_own_mission_id_is_not_stolen_by_a_second(self):
+        """Regression for the unbounded gap between "to queue." and
+        "MissionId: [...]": when the FIRST notification in an assembled
+        record has no MissionId of its own before a SECOND "Added
+        notification" begins, the parser must not walk past that second
+        block and cross-bind the first's text to the second's mission id.
+        It's fine (and correct) for this record to yield the second
+        notification's own pairing instead -- what it must never do is
+        report "First" text with the second's id."""
+        record = (
+            '<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> Added notification '
+            '"First" [1] to queue.\n'
+            '<2026-08-08T02:44:59.362Z> [Notice] <SHUDEvent_OnNotification> Added notification '
+            '"Second" [2] to queue. New queue size: 2, '
+            'MissionId: [22222222-2222-2222-2222-222222222222], ObjectiveId: []'
+        )
+        event = parsers.parse_notification(record)
+        # Must not be the cross-bound (First, Second's id) pairing.
+        self.assertFalse(event is not None and event["text"] == "First")
+        if event is not None:
+            self.assertEqual(event["text"], "Second")
+            self.assertEqual(event["missionId"], "22222222-2222-2222-2222-222222222222")
+
     def test_two_notifications_in_one_record_returns_the_first(self):
         record = (
             '<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> Added notification '
@@ -177,6 +200,35 @@ class ObjectiveTests(unittest.TestCase):
         table_text_first = parsers.ObjectiveTable()
         table_text_first.ingest(hidden_text)
         self.assertIsNone(table_text_first.ingest(UPSERT))
+
+    def test_updating_a_partial_entry_moves_it_to_the_back_of_the_eviction_queue(self):
+        """A half that gets re-ingested (e.g. a second upsert for the same
+        objective before its text half arrives) must count as recently
+        touched, not stay pinned at its original insertion position -- or a
+        long-lived, frequently-updated objective gets evicted ahead of a
+        newer, permanently-dead half purely because it was first seen
+        earlier."""
+        table = parsers.ObjectiveTable()
+
+        # Fill the table to capacity; objective 0 is inserted first (oldest).
+        for i in range(512):
+            objective_id = f"{i:08x}-0000-0000-0000-000000000000"
+            table.ingest(UPSERT.replace("04430bfc-cf39-c4e1-84c8-7203dacbc9a7", objective_id))
+        self.assertEqual(len(table._partial), 512)
+
+        # Re-touch objective 0 with a second upsert (still incomplete, no
+        # text half yet) -- this must move it to the back of the eviction
+        # queue rather than leaving it at its original, now-oldest position.
+        first_id = "00000000-0000-0000-0000-000000000000"
+        table.ingest(UPSERT.replace("04430bfc-cf39-c4e1-84c8-7203dacbc9a7", first_id))
+
+        # One more new half now must evict objective 1 (the true oldest
+        # after the re-touch), not objective 0.
+        overflow_id = "ffffffff-0000-0000-0000-000000000000"
+        table.ingest(UPSERT.replace("04430bfc-cf39-c4e1-84c8-7203dacbc9a7", overflow_id))
+
+        self.assertIn(first_id, table._partial)
+        self.assertNotIn("00000001-0000-0000-0000-000000000000", table._partial)
 
     def test_partial_table_is_capped_and_evicts_oldest(self):
         table = parsers.ObjectiveTable()

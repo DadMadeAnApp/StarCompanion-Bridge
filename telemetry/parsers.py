@@ -53,10 +53,25 @@ def iter_records(lines: Iterable[str]) -> Iterator[str]:
 
 
 # DOTALL: the quoted text can contain the newline that wrapped the record.
-# Non-greedy text capture (.*?) bounded by the real delimiter "] to queue" to
-# prevent cross-notification capture when two notifications share one assembled record.
+#
+# Both the text capture and the gap before MissionId use
+# `(?:(?!Added notification).)*?` rather than a plain `.*?`. A plain
+# non-greedy dot is only non-greedy about how FAR it reaches, not about
+# WHERE it's allowed to reach: when a first notification has no MissionId
+# reachable before hitting a second "Added notification" block, the engine
+# backtracks and lets that first `.*?` (the text group itself) swallow the
+# second notification's own opening text and delimiter whole, then matches
+# the second's MissionId as if it were the first's -- pairing the wrong text
+# with the wrong id, worse than before. Barring "Added notification" from
+# every span between the outer markers means a record with two notifications
+# either binds each strictly to its own MissionId, or -- if a MissionId is
+# genuinely missing for the one in front -- fails to match that one at all
+# and falls through to matching the next, rather than silently cross-binding.
 _NOTIFICATION = re.compile(
-    r"<SHUDEvent_OnNotification> Added notification \"(?P<text>.*?)\" \[\d+\] to queue\..*?"
+    r"<SHUDEvent_OnNotification> Added notification \""
+    r"(?P<text>(?:(?!Added notification).)*?)"
+    r"\" \[\d+\] to queue\."
+    r"(?:(?!Added notification).)*?"
     r"MissionId: \[(?P<mission>[0-9a-f-]+)\]",
     re.DOTALL,
 )
@@ -220,7 +235,14 @@ class ObjectiveTable:
         merged["hiddenInUI"] = merged["_upsertHiddenInUI"] or merged["_textHiddenInUI"]
 
         if "state" not in merged or "textRaw" not in merged:
-            if objective_id not in self._partial and len(self._partial) >= _PARTIAL_CAP:
+            # Pop before re-inserting: dict insertion order is what backs the
+            # "oldest first" eviction below, so an update to an existing key
+            # must move it to the end (most recent) rather than leaving it at
+            # its original insertion position. Without this a long-lived,
+            # frequently-updated half is evicted ahead of a newer, dead one
+            # purely because it was first ingested earlier.
+            self._partial.pop(objective_id, None)
+            if len(self._partial) >= _PARTIAL_CAP:
                 oldest = next(iter(self._partial))
                 self._partial.pop(oldest)
             self._partial[objective_id] = merged
