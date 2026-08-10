@@ -186,5 +186,62 @@ class ObjectiveTests(unittest.TestCase):
         self.assertIsNone(table.ingest(evicted_text))
 
 
+class LocationTests(unittest.TestCase):
+
+    def test_parses_the_location_code(self):
+        record = (
+            "<2026-08-08T02:43:46.205Z> [Notice] <RequestLocationInventory> Player[TestPilot] "
+            "requested inventory for Location[Stanton4_NewBabbage] [Team_CoreGameplayFeatures][Inventory]"
+        )
+        self.assertEqual(parsers.parse_location(record), {"location": "Stanton4_NewBabbage"})
+
+    def test_does_not_emit_the_handle(self):
+        record = (
+            "<2026-08-08T02:43:46.205Z> [Notice] <RequestLocationInventory> Player[TestPilot] "
+            "requested inventory for Location[RR_MIC_LEO] [Team_CoreGameplayFeatures][Inventory]"
+        )
+        self.assertNotIn("TestPilot", str(parsers.parse_location(record)))
+
+
+class BuildTests(unittest.TestCase):
+
+    def test_reads_the_build_from_the_header(self):
+        header = '<2026-08-08T02:42:26.205Z> BackupNameAttachment=" Build(12344265) 07 Aug 26 (22 42 19)"'
+        self.assertEqual(parsers.parse_build(header), "12344265")
+
+    def test_returns_none_for_any_other_line(self):
+        self.assertIsNone(parsers.parse_build("<2026-08-08T02:42:26.206Z> Running 64 bit version"))
+
+
+class FeedRouterTests(unittest.TestCase):
+
+    def test_routes_each_whitelisted_tag_to_its_feed(self):
+        router = parsers.FeedRouter()
+        router.route(UPSERT)
+        feed, event = router.route(TEXT)
+        self.assertEqual(feed, "mission")
+        location = (
+            "<2026-08-08T02:43:46.205Z> [Notice] <RequestLocationInventory> Player[TestPilot] "
+            "requested inventory for Location[Stanton4_NewBabbage]"
+        )
+        self.assertEqual(router.route(location)[0], "context")
+
+    def test_drops_every_unwhitelisted_tag(self):
+        router = parsers.FeedRouter()
+        self.assertIsNone(router.route("<2026-08-08T02:43:46.205Z> [Notice] <OnDragInventoryItemModifyTarget> noise"))
+
+    def test_survives_the_whole_fixture_without_raising(self):
+        router = parsers.FeedRouter()
+        counts = {"mission": 0, "notification": 0, "context": 0}
+        with FIXTURE.open(encoding="utf-8", errors="replace") as fh:
+            for record in parsers.iter_records(fh):
+                routed = router.route(record)
+                if routed:
+                    counts[routed[0]] += 1
+        self.assertGreater(counts["mission"], 0)
+        self.assertGreater(counts["notification"], 0)
+        self.assertGreater(counts["context"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

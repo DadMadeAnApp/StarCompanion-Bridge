@@ -105,6 +105,36 @@ def parse_objective_text(record: str) -> dict | None:
     }
 
 
+_LOCATION = re.compile(r"<RequestLocationInventory>.*?Location\[(?P<location>[^\]]+)\]", re.DOTALL)
+_BUILD = re.compile(r"Build\((?P<build>\d+)\)")
+
+# Whitelist, never blacklist: a new patch's new chatter tag is far more likely
+# to be noise than signal, so anything unlisted is dropped unread.
+TAG_MISSION_UPSERT = "<ObjectiveUpserted>"
+TAG_MISSION_TEXT = "<CMissionLogEntry::UpdateActiveObjective>"
+TAG_NOTIFICATION = "<SHUDEvent_OnNotification>"
+TAG_LOCATION = "<RequestLocationInventory>"
+WHITELIST = (TAG_MISSION_UPSERT, TAG_MISSION_TEXT, TAG_NOTIFICATION, TAG_LOCATION)
+
+
+def parse_location(record: str) -> dict | None:
+	"""Current location code.
+
+	The player handle in this line is deliberately not emitted — no feed in this
+	build needs it, and the smallest payload is the safest one.
+	"""
+	m = _LOCATION.search(record)
+	return {"location": m.group("location")} if m else None
+
+
+def parse_build(record: str) -> str | None:
+	"""The game build from the log header, for the parser/game build advisory."""
+	if "BackupNameAttachment" not in record:
+		return None
+	m = _BUILD.search(record)
+	return m.group("build") if m else None
+
+
 _PARTIAL_CAP = 512
 
 
@@ -196,3 +226,22 @@ class ObjectiveTable:
             "flags": merged.get("flags", []),
             "hiddenInUI": merged.get("hiddenInUI", False),
         }
+
+
+class FeedRouter:
+	"""Whitelist dispatch: record in, (feed, event) out, or None."""
+
+	def __init__(self) -> None:
+		self._objectives = ObjectiveTable()
+
+	def route(self, record: str) -> tuple[str, dict] | None:
+		if TAG_MISSION_UPSERT in record or TAG_MISSION_TEXT in record:
+			event = self._objectives.ingest(record)
+			return ("mission", event) if event else None
+		if TAG_NOTIFICATION in record:
+			event = parse_notification(record)
+			return ("notification", event) if event else None
+		if TAG_LOCATION in record:
+			event = parse_location(record)
+			return ("context", event) if event else None
+		return None
