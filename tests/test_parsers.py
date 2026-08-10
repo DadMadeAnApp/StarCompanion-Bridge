@@ -253,6 +253,22 @@ class FeedRouterTests(unittest.TestCase):
         self.assertGreater(counts["notification"], 0)
         self.assertGreater(counts["context"], 0)
 
+    def test_noise_lines_do_not_leak_into_emitted_events(self):
+        """Verify that trailing noise lines (e.g., [SPAM], [CVARS]) captured
+        by the fixture do not corrupt mission/notification/context event text."""
+        router = parsers.FeedRouter()
+        with FIXTURE.open(encoding="utf-8", errors="replace") as fh:
+            for record in parsers.iter_records(fh):
+                routed = router.route(record)
+                if routed:
+                    feed, event = routed
+                    # Check that event text (if present) does not contain noise markers
+                    if "text" in event:
+                        self.assertNotIn("SPAM", event["text"],
+                            f"SPAM noise leaked into {feed} event text: {event['text'][:100]}")
+                        self.assertNotIn("Radiation Heat", event["text"],
+                            f"Radiation Heat noise leaked into {feed} event text: {event['text'][:100]}")
+
 
 if __name__ == "__main__":
     unittest.main()

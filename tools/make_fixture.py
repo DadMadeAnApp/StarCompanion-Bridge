@@ -27,9 +27,11 @@ ACCOUNT = "100000000000"
 def make_redact(uuid_map: dict) -> callable:
     """Factory that returns a redact function with UUID mapping state."""
     def redact(line: str) -> str:
-        # Redact player handle (in Player[...] and quoted contexts)
+        # Redact player handle (in Player[...], quoted contexts, and bare references)
         line = re.sub(r"Player\[[^\]]+\]", f"Player[{HANDLE}]", line)
         line = re.sub(r"'MrDadpool'", f"'{HANDLE}'", line)
+        # Redact bare handle references (word-bounded)
+        line = re.sub(r"\bMrDadpool\b", HANDLE, line)
 
         # Redact account ID: word-bounded 12-digit sequences
         line = re.sub(r"\b\d{12}\b", ACCOUNT, line)
@@ -109,6 +111,19 @@ def main(src: str, dest: str) -> None:
                     j += 1
             if continuation_count > 0:
                 wrapped_count += 1
+
+            # Keep up to 3 trailing lines after this record and its continuations
+            # These may be noise lines like [SPAM] or genuine continuations of other records
+            # Stop if we encounter a new record (indicated by > [ pattern)
+            trailing_kept = 0
+            while j < len(lines) and trailing_kept < 3:
+                nxt = lines[j]
+                if re.search(r"> \[", nxt):
+                    # Hit a new record, don't include it
+                    break
+                out.append(nxt)
+                trailing_kept += 1
+                j += 1
             skip_until = j
 
         elif any(tag in line for tag in CHATTER_TAGS) and kept_chatter < 40:
@@ -128,6 +143,18 @@ def main(src: str, dest: str) -> None:
                 j += 1
             if continuation_count > 0:
                 wrapped_count += 1
+
+            # Keep up to 3 trailing lines after chatter records too
+            # Stop if we encounter a new record (indicated by > [ pattern)
+            trailing_kept = 0
+            while j < len(lines) and trailing_kept < 3:
+                nxt = lines[j]
+                if re.search(r"> \[", nxt):
+                    # Hit a new record, don't include it
+                    break
+                out.append(nxt)
+                trailing_kept += 1
+                j += 1
             skip_until = j
             kept_chatter += 1
 
