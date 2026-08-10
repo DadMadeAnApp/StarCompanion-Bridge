@@ -158,6 +158,28 @@ class TailerTests(unittest.TestCase):
         self.assertIn("joined channel", event["text"])
         self.assertEqual(event["missionId"], "00000000-0000-0000-0000-000000000000")
 
+    def test_a_spam_line_does_not_glue_onto_the_live_record_before_it(self):
+        """Pins the same fix on the live tailer path, not just the pure
+        parser: a '[SPAM N][Error]' line arriving after a whitelisted record
+        must start its own record rather than being appended as a
+        continuation, or its text corrupts the record before it on the wire."""
+
+        def append():
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    "<2026-08-08T03:28:58.406Z> [Notice] <ObjectiveUpserted> real record\n"
+                )
+                fh.write(
+                    "<2026-08-08T03:29:02.041Z> [SPAM 135][Error] <Fire Simulation> "
+                    "Radiation Heat\n"
+                )
+                fh.write("<2026-08-08T03:29:03.000Z> [Notice] <Other> next\n")
+
+        seen = self._collect(append, 2)
+        self.assertIn("real record", seen[0])
+        self.assertNotIn("Radiation Heat", seen[0])
+        self.assertIn("SPAM 135", seen[1])
+
 
 if __name__ == "__main__":
     unittest.main()

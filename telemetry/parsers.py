@@ -12,14 +12,28 @@ from __future__ import annotations
 import re
 from typing import Iterable, Iterator
 
-# A record begins at a timestamp FOLLOWED BY A SEVERITY TOKEN. The timestamp
-# alone is not enough: a wrapped notification's continuation carries its own
-# timestamp, and the closing '" [N] to queue' and MissionId both live on it, so
-# splitting there loses the mission id and truncates the text. Timestamp-less
-# continuations exist too (batch/streaming chatter); this one predicate covers
-# both forms.
+# A record begins at a timestamp FOLLOWED BY ANY '[' bracket group. The
+# timestamp alone is not enough: a wrapped notification's continuation
+# carries its own timestamp, and the closing '" [N] to queue' and MissionId
+# both live on it, so splitting there loses the mission id and truncates the
+# text. Timestamp-less continuations exist too (batch/streaming chatter);
+# this one predicate covers both forms.
+#
+# A fixed severity whitelist (Notice/Warn/Error/Trace) is wrong: the real log
+# also opens records with '[SPAM N][Notice]', '[SPAM N][Error]', '[CVARS]',
+# '[flow]', '[VK_INFO]', '[CGlobalGameUI::OpenLoadingScreen]', and other
+# bracket prefixes the whitelist doesn't know about. Any one of those that
+# doesn't match gets treated as a continuation and glued onto the record
+# before it — e.g. an unrelated '[SPAM 135][Error]' line landing inside an
+# <ObjectiveUpserted> record's text. Genuine continuations never start with
+# a bracket at all: they look like '<ts> : " [2] to queue…' or
+# '<ts>    "You have joined channel…', so matching on the bracket alone,
+# regardless of what's inside it, distinguishes a new record from a
+# continuation without needing to enumerate every prefix CIG might emit.
+# Header lines ('<ts> BackupNameAttachment="…"') have no bracket either and
+# stay continuations, which is fine — parse_build reads them as raw lines.
 RECORD_START = re.compile(
-    r"^<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[(?:Notice|Warn|Error|Trace)\]"
+    r"^<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \["
 )
 
 

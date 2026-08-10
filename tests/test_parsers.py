@@ -36,10 +36,21 @@ class IterRecordsTests(unittest.TestCase):
         lines = ["orphan continuation with no timestamp\n"]
         self.assertEqual(list(parsers.iter_records(lines)), [])
 
-    def test_recognises_every_severity_token(self):
-        for severity in ("Notice", "Warn", "Error", "Trace"):
-            line = f"<2026-08-08T02:44:59.361Z> [{severity}] <Tag> body\n"
-            self.assertEqual(len(list(parsers.iter_records([line]))), 1, severity)
+    def test_recognises_every_bracket_prefix_the_log_emits(self):
+        for prefix in ("[Notice]", "[Warn]", "[Error]", "[Trace]",
+                       "[SPAM 135][Error]", "[SPAM 99][Notice]", "[CVARS]",
+                       "[flow]", "[VK_INFO]", "[CGlobalGameUI::OpenLoadingScreen]"):
+            line = f"<2026-08-08T02:44:59.361Z> {prefix} <Tag> body\n"
+            self.assertEqual(len(list(parsers.iter_records([line]))), 1, prefix)
+
+    def test_a_spam_line_does_not_glue_onto_the_record_before_it(self):
+        lines = [
+            "<2026-08-08T03:28:58.406Z> [Notice] <ObjectiveUpserted> real record\n",
+            "<2026-08-08T03:29:02.041Z> [SPAM 135][Error] <Fire Simulation> Radiation Heat\n",
+        ]
+        records = list(parsers.iter_records(lines))
+        self.assertEqual(len(records), 2)
+        self.assertNotIn("Radiation Heat", records[0])
 
 
 class NotificationTests(unittest.TestCase):
