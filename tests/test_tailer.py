@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from telemetry import tailer
+from telemetry import parsers, tailer
 
 
 class TailerTests(unittest.TestCase):
@@ -112,6 +112,51 @@ class TailerTests(unittest.TestCase):
         self.assertIn("joined channel", seen[0])
         self.assertIn("to queue", seen[0])
         self.assertIn("MissionId: [00000000-0000-0000-0000-000000000000]", seen[0])
+
+    def test_strips_carriage_returns_from_crlf_lines(self):
+        """Windows' Game.log may use CRLF. A stray '\\r' before every internal
+        join, and a trailing one on the record, would ride the wire into the
+        HUD notification's "text" field verbatim -- a visible defect on the
+        client. The assembled record must contain no '\\r' at all, and the
+        real newline between physical lines must survive so
+        parse_notification's re.DOTALL match still spans it."""
+        crlf_path = Path(self.dir.name) / "GameCRLF.log"
+        with crlf_path.open("wb") as fh:
+            fh.write(
+                b'<2026-08-08T02:42:26.205Z> BackupNameAttachment=" Build(12344265) 07 Aug 26"\r\n'
+            )
+
+        async def run():
+            t = tailer.LogTailer(crlf_path, poll_interval=0.01)
+            seen = []
+
+            async def consume():
+                async for record in t.watch():
+                    seen.append(record)
+                    return
+
+            task = asyncio.ensure_future(consume())
+            await asyncio.sleep(0.03)
+            with crlf_path.open("ab") as fh:
+                fh.write(
+                    b'<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> '
+                    b'Added notification "You have joined channel \'Test Org\'.\r\n'
+                )
+                fh.write(
+                    b'" [2] to queue. New queue size: 1, '
+                    b"MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: []\r\n"
+                )
+                fh.write(b"<2026-08-08T02:45:00.000Z> [Notice] <Other> next\r\n")
+            await asyncio.wait_for(task, timeout=3)
+            return seen
+
+        seen = asyncio.run(run())
+        self.assertEqual(len(seen), 1)
+        self.assertNotIn("\r", seen[0])
+        event = parsers.parse_notification(seen[0])
+        self.assertIsNotNone(event)
+        self.assertIn("joined channel", event["text"])
+        self.assertEqual(event["missionId"], "00000000-0000-0000-0000-000000000000")
 
 
 if __name__ == "__main__":

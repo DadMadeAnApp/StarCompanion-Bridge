@@ -117,7 +117,12 @@ class LogTailer:
 
                 quiet_polls = 0
                 self._last_event = time.monotonic()
-                line = raw.decode("utf-8", errors="replace")
+                # Strip the line ending ourselves and re-add a bare '\n': CRLF
+                # (routine on the Windows box this actually runs on) would
+                # otherwise leave a stray '\r' before every internal join and
+                # a trailing one on the record, both of which ride the wire
+                # into the "text" field a client renders verbatim.
+                line = raw.decode("utf-8", errors="replace").rstrip("\r\n") + "\n"
                 if RECORD_START.match(line):
                     if pending:
                         yield "".join(pending).rstrip("\n")
