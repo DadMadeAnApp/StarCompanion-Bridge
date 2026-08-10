@@ -64,6 +64,19 @@ class LogTailer:
                         self.game_build = build
                         return
 
+    def probe(self) -> None:
+        """Actually try to open the file for shared read; raises OSError if not.
+
+        Constructing a LogTailer never fails on its own — `_read_header`
+        suppresses OSError so a merely-unreadable log doesn't blow up
+        __init__. That means "the file exists but the game (or an AV
+        product) has it locked" was previously indistinguishable from
+        "readable" until the pump tried to open it and quietly died. Call
+        this at subscribe time so that case maps to the documented
+        'log locked' ok:false ack instead of a hung subscription.
+        """
+        self.path.open("rb").close()
+
     def is_stale(self, now: float | None = None) -> bool:
         """True when nothing has been written for a while — i.e. SC isn't running.
 
@@ -91,6 +104,18 @@ class LogTailer:
             inode = self.path.stat().st_ino
             pending: list[str] = []
             quiet_polls = 0
+            lines_read = 0
+            # A burst of buffered lines (e.g. catching up after a stall) would
+            # otherwise run this whole `while True` synchronously, since the
+            # loop only `await`s when a read comes back empty. That starves
+            # the same event loop the command dispatcher runs on -- exactly
+            # the "telemetry regresses Flight Controls" failure this project
+            # can't afford. Yield every _YIELD_EVERY_N_LINES lines: large
+            # enough that ordinary per-line ticking almost never pays the
+            # extra scheduler round-trip (real bursts are dozens of lines,
+            # not thousands), small enough that dispatch latency during a
+            # burst stays sub-tick.
+            _YIELD_EVERY_N_LINES = 200
 
             while True:
                 raw = fh.readline()
@@ -117,6 +142,9 @@ class LogTailer:
 
                 quiet_polls = 0
                 self._last_event = time.monotonic()
+                lines_read += 1
+                if lines_read % _YIELD_EVERY_N_LINES == 0:
+                    await asyncio.sleep(0)
                 # Strip the line ending ourselves and re-add a bare '\n': CRLF
                 # (routine on the Windows box this actually runs on) would
                 # otherwise leave a stray '\r' before every internal join and

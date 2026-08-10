@@ -158,6 +158,65 @@ class TailerTests(unittest.TestCase):
         self.assertIn("joined channel", event["text"])
         self.assertEqual(event["missionId"], "00000000-0000-0000-0000-000000000000")
 
+    def test_probe_succeeds_on_a_readable_file(self):
+        t = tailer.LogTailer(self.path)
+        t.probe()  # must not raise
+
+    def test_probe_raises_on_an_unreadable_file(self):
+        t = tailer.LogTailer(self.path)
+        self.path.chmod(0)
+        self.addCleanup(lambda: self.path.chmod(0o644))
+        try:
+            with self.assertRaises(OSError):
+                t.probe()
+        finally:
+            self.path.chmod(0o644)
+
+    def test_watch_yields_control_during_a_line_burst(self):
+        """A burst of many buffered lines must not run the whole while-loop
+        synchronously -- that would starve the event loop that command
+        dispatch also runs on. Regression guard: patch asyncio.sleep to
+        record every call the loop makes; a burst bigger than the yield
+        threshold must trigger at least one, even though every line is
+        already sitting in the file (no read ever comes back empty)."""
+        lines = "".join(
+            f"<2026-08-08T02:49:{i % 60:02d}.000Z> [Notice] <Other> line {i}\n"
+            for i in range(450)
+        )
+
+        async def run():
+            t = tailer.LogTailer(self.path, poll_interval=0.01)
+            sleeps = []
+            real_sleep = asyncio.sleep
+
+            async def counting_sleep(delay, *a, **k):
+                sleeps.append(delay)
+                await real_sleep(0)
+
+            seen = []
+
+            async def consume():
+                async for record in t.watch():
+                    seen.append(record)
+                    if len(seen) >= 450:
+                        return
+
+            asyncio.sleep = counting_sleep
+            try:
+                task = asyncio.ensure_future(consume())
+                await real_sleep(0.05)
+                with self.path.open("a", encoding="utf-8") as fh:
+                    fh.write(lines)
+                await asyncio.wait_for(task, timeout=5)
+            finally:
+                asyncio.sleep = real_sleep
+            return sleeps
+
+        sleeps = asyncio.run(run())
+        # At least one yield-for-a-burst call (delay 0), distinct from the
+        # quiet-poll waits (delay == poll_interval), must have happened.
+        self.assertIn(0, sleeps)
+
     def test_a_spam_line_does_not_glue_onto_the_live_record_before_it(self):
         """Pins the same fix on the live tailer path, not just the pure
         parser: a '[SPAM N][Error]' line arriving after a whitelisted record
