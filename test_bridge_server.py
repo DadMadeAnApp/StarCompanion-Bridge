@@ -173,5 +173,350 @@ class NumpadKeyResolutionTests(unittest.TestCase):
         self.assertEqual(mods, [])
 
 
+# ── Telemetry: subscribe/unsubscribe interception, the pump, and feed_task ──
+import asyncio
+import json
+import tempfile
+from pathlib import Path
+from unittest import mock
+
+
+class FakeWebSocket:
+    """Just enough of a websockets.ServerConnection for make_handler(None).
+
+    Feeds `handle` from an asyncio.Queue instead of a real socket, so a test
+    can push messages, let the handler react, and then end the connection
+    (StopAsyncIteration) to drive the same `finally` cleanup a real close
+    would -- feed_task cancellation included.
+    """
+
+    def __init__(self):
+        self._incoming: asyncio.Queue = asyncio.Queue()
+        self.sent: list[dict] = []
+        self.remote_address = ("127.0.0.1", 55555)
+        self.closed = False
+
+    def push(self, message: dict) -> None:
+        self._incoming.put_nowait(json.dumps(message))
+
+    def end(self) -> None:
+        self._incoming.put_nowait(None)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        item = await self._incoming.get()
+        if item is None:
+            raise StopAsyncIteration
+        return item
+
+    async def send(self, data: str) -> None:
+        self.sent.append(json.loads(data))
+
+    async def close(self, code=None, reason=None) -> None:
+        self.closed = True
+
+    def telemetry_frames(self, feed: str | None = None) -> list[dict]:
+        frames = [m for m in self.sent if m.get("type") == "telemetry"]
+        if feed is not None:
+            frames = [f for f in frames if f.get("feed") == feed]
+        return frames
+
+
+class TelemetryHandlerTests(unittest.TestCase):
+    """Exercises the real handler/pump, not a reimplementation of either."""
+
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.log_path = Path(self.dir.name) / "Game.log"
+        self.log_path.write_text(
+            '<2026-08-08T02:42:26.205Z> BackupNameAttachment=" Build(12344265) 07 Aug 26"\n',
+            encoding="utf-8",
+        )
+        bridge_server._log_path_override = self.log_path
+        self.addCleanup(setattr, bridge_server, "_log_path_override", None)
+
+    def _run(self, coro):
+        return asyncio.run(asyncio.wait_for(coro, timeout=5))
+
+    def test_subscribe_acks_and_delivers_a_real_frame_through_the_pump(self):
+        ws = FakeWebSocket()
+
+        async def scenario():
+            handle = bridge_server.make_handler(None)
+            ws.push({"type": "subscribe", "feeds": ["context"], "id": 1})
+            task = asyncio.ensure_future(handle(ws))
+            await asyncio.sleep(0.1)
+            with self.log_path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    "<2026-08-08T02:43:00.000Z> [Notice] <RequestLocationInventory> "
+                    "Player[X] requested inventory for Location[Stanton4_NewBabbage] "
+                    "[Team_CoreGameplayFeatures][Inventory]\n"
+                )
+            # LogTailer's default poll_interval is 0.25s and a record with no
+            # follow-up needs two quiet polls before it flushes.
+            await asyncio.sleep(0.8)
+            ws.end()
+            await task
+
+        self._run(scenario())
+
+        acks = [m for m in ws.sent if m.get("type") == "ack"]
+        self.assertTrue(acks[0]["ok"])
+        self.assertEqual(acks[0]["feeds"], ["context"])
+
+        context_frames = ws.telemetry_frames("context")
+        locations = [f["event"].get("location") for f in context_frames]
+        self.assertIn("Stanton4_NewBabbage", locations)
+
+    def test_unsubscribe_stops_delivering_new_frames(self):
+        ws = FakeWebSocket()
+
+        async def scenario():
+            handle = bridge_server.make_handler(None)
+            ws.push({"type": "subscribe", "feeds": ["context"], "id": 1})
+            task = asyncio.ensure_future(handle(ws))
+            await asyncio.sleep(0.1)
+            ws.push({"type": "unsubscribe", "id": 2})
+            await asyncio.sleep(0.05)
+            with self.log_path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    "<2026-08-08T02:43:00.000Z> [Notice] <RequestLocationInventory> "
+                    "Player[X] requested inventory for Location[ShouldNotArrive] "
+                    "[Team_CoreGameplayFeatures][Inventory]\n"
+                )
+            await asyncio.sleep(0.8)
+            ws.end()
+            await task
+
+        self._run(scenario())
+
+        locations = [f["event"].get("location") for f in ws.telemetry_frames("context")]
+        self.assertNotIn("ShouldNotArrive", locations)
+
+    def test_subscribe_and_unsubscribe_never_reach_command_dispatch(self):
+        """Guards the defensive dead branch in _dispatch: the message loop
+        must intercept these two types itself."""
+        ws = FakeWebSocket()
+
+        async def scenario():
+            with mock.patch.object(
+                bridge_server, "_dispatch",
+                side_effect=AssertionError("subscribe/unsubscribe reached _dispatch"),
+            ):
+                handle = bridge_server.make_handler(None)
+                ws.push({"type": "subscribe", "feeds": ["context"], "id": 1})
+                task = asyncio.ensure_future(handle(ws))
+                await asyncio.sleep(0.1)
+                ws.push({"type": "unsubscribe", "id": 2})
+                await asyncio.sleep(0.1)
+                ws.end()
+                await task
+
+        self._run(scenario())  # would raise inside the task if the guard failed
+        acks = [m for m in ws.sent if m.get("type") == "ack"]
+        self.assertEqual(len(acks), 2)
+        self.assertTrue(acks[0]["ok"])
+        self.assertTrue(acks[1]["ok"])
+
+    def test_log_locked_is_reported_as_ok_false_not_a_silent_hang(self):
+        """CRITICAL 1a: an existing-but-unopenable log must not ack ok:true."""
+        self.log_path.chmod(0)
+        self.addCleanup(self.log_path.chmod, 0o644)
+
+        ws = FakeWebSocket()
+
+        async def scenario():
+            handle = bridge_server.make_handler(None)
+            ws.push({"type": "subscribe", "feeds": ["context"], "id": 1})
+            task = asyncio.ensure_future(handle(ws))
+            await asyncio.sleep(0.1)
+            ws.end()
+            await task
+
+        self._run(scenario())
+        self.log_path.chmod(0o644)
+
+        acks = [m for m in ws.sent if m.get("type") == "ack"]
+        self.assertFalse(acks[0]["ok"])
+        self.assertEqual(acks[0]["error"], "log locked")
+        # No pump should ever have started, so no telemetry frames either.
+        self.assertEqual(ws.telemetry_frames(), [])
+
+    def test_gameRunning_snapshot_sent_on_subscribe_then_flips_true_on_first_record(self):
+        """CRITICAL 2: §6.1's context event fires right on subscribe (a
+        freshly-constructed LogTailer has never seen a line yet, so it reads
+        as stale until the pump's first record proves otherwise -- that's
+        the honest signal, not a bug: the bridge genuinely doesn't know the
+        game is running until the log moves), and then flips to true the
+        moment the pump sees the log actually growing."""
+        ws = FakeWebSocket()
+
+        async def scenario():
+            handle = bridge_server.make_handler(None)
+            ws.push({"type": "subscribe", "feeds": ["context"], "id": 1})
+            task = asyncio.ensure_future(handle(ws))
+            await asyncio.sleep(0.1)
+            with self.log_path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    "<2026-08-08T02:43:00.000Z> [Notice] <RequestLocationInventory> "
+                    "Player[X] requested inventory for Location[Somewhere] "
+                    "[Team_CoreGameplayFeatures][Inventory]\n"
+                )
+            await asyncio.sleep(0.8)
+            ws.end()
+            await task
+
+        self._run(scenario())
+
+        game_running_frames = [
+            f for f in ws.telemetry_frames("context") if "gameRunning" in f["event"]
+        ]
+        self.assertEqual([f["event"]["gameRunning"] for f in game_running_frames], [False, True])
+
+    def test_gameRunning_context_is_not_sent_to_a_feed_that_did_not_subscribe(self):
+        ws = FakeWebSocket()
+
+        async def scenario():
+            handle = bridge_server.make_handler(None)
+            ws.push({"type": "subscribe", "feeds": ["mission"], "id": 1})
+            task = asyncio.ensure_future(handle(ws))
+            await asyncio.sleep(0.1)
+            ws.end()
+            await task
+
+        self._run(scenario())
+        self.assertEqual(ws.telemetry_frames("context"), [])
+
+    def test_pump_error_clears_feed_task_so_a_resubscribe_restarts_it(self):
+        """CRITICAL 1b: whatever kills the pump, feed_task must not stay
+        non-None -- otherwise the double-start guard blocks every future
+        resubscribe on this connection forever."""
+        real_watch = bridge_server.LogTailer.watch
+        state = {"calls": 0}
+
+        async def flaky_watch(self):
+            state["calls"] += 1
+            if state["calls"] == 1:
+                raise OSError("simulated: log vanished after subscribe")
+            async for record in real_watch(self):
+                yield record
+
+        ws = FakeWebSocket()
+
+        async def scenario():
+            with mock.patch.object(bridge_server.LogTailer, "watch", flaky_watch):
+                handle = bridge_server.make_handler(None)
+                ws.push({"type": "subscribe", "feeds": ["context"], "id": 1})
+                task = asyncio.ensure_future(handle(ws))
+                await asyncio.sleep(0.15)  # let the first pump die
+
+                # Resubscribing must create a fresh pump, not be swallowed by
+                # a feed_task the dead pump never cleared.
+                ws.push({"type": "subscribe", "feeds": ["context"], "id": 2})
+                await asyncio.sleep(0.1)
+                with self.log_path.open("a", encoding="utf-8") as fh:
+                    fh.write(
+                        "<2026-08-08T02:43:00.000Z> [Notice] <RequestLocationInventory> "
+                        "Player[X] requested inventory for Location[Recovered] "
+                        "[Team_CoreGameplayFeatures][Inventory]\n"
+                    )
+                await asyncio.sleep(0.8)
+                ws.end()
+                await task
+
+        self._run(scenario())
+
+        acks = [m for m in ws.sent if m.get("type") == "ack"]
+        self.assertTrue(acks[0]["ok"])   # first subscribe still acks ok
+        self.assertTrue(acks[1]["ok"])   # second subscribe (the resubscribe)
+        locations = [f["event"].get("location") for f in ws.telemetry_frames("context")]
+        self.assertIn("Recovered", locations)
+
+    def test_feed_task_is_cancelled_when_the_connection_closes(self):
+        """The pump must not keep consuming the tailer after `handle` returns
+        -- covers the feed_task.cancel() path in the connection's finally."""
+        state = {"iterations": 0}
+        real_watch = bridge_server.LogTailer.watch
+
+        async def counting_watch(self):
+            async for record in real_watch(self):
+                state["iterations"] += 1
+                yield record
+
+        ws = FakeWebSocket()
+
+        async def scenario():
+            with mock.patch.object(bridge_server.LogTailer, "watch", counting_watch):
+                handle = bridge_server.make_handler(None)
+                ws.push({"type": "subscribe", "feeds": ["context"], "id": 1})
+                task = asyncio.ensure_future(handle(ws))
+                await asyncio.sleep(0.1)
+                ws.end()
+                await task
+                # The handler has returned (and so cancelled feed_task); any
+                # further writes to the log must not be observed.
+                with self.log_path.open("a", encoding="utf-8") as fh:
+                    fh.write(
+                        "<2026-08-08T02:43:00.000Z> [Notice] <RequestLocationInventory> "
+                        "Player[X] requested inventory for Location[AfterClose] "
+                        "[Team_CoreGameplayFeatures][Inventory]\n"
+                    )
+                await asyncio.sleep(0.2)
+
+        self._run(scenario())
+        locations = [f["event"].get("location") for f in ws.telemetry_frames("context")]
+        self.assertNotIn("AfterClose", locations)
+
+    def test_pump_burns_seq_on_a_rate_limited_frame_end_to_end(self):
+        """MINOR 6 replacement: drives the real pump/limiter/session path
+        (not a reimplementation of the ordering in the test body) by
+        appending mission records faster than TELEMETRY_MAX_PER_SECOND
+        allows, and checking the *delivered* frames for a seq gap."""
+        ws = FakeWebSocket()
+
+        upsert = (
+            "<2026-08-08T02:49:20.{ms:03d}Z> [Notice] <ObjectiveUpserted> Received "
+            "ObjectiveUpserted push message for: mission_id "
+            "94c24d22-cf1f-4e79-bdce-b35f3ee499c0 - objective_id "
+            "{oid} - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 - "
+            "flags=ShowInLog| [Team_GameServices][Missions]\n"
+            "<2026-08-08T02:49:20.{ms:03d}Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> "
+            "Objective updated id={oid}, flags=ShowInLog|, hidden=0, hiddenInUI=0, "
+            "markerHidden=0, uiDisplay[Priority=1][Text=Go] [Team_MissionFeatures][Missions]\n"
+        )
+
+        async def scenario():
+            with mock.patch.object(bridge_server, "TELEMETRY_MAX_PER_SECOND", 5):
+                handle = bridge_server.make_handler(None)
+                ws.push({"type": "subscribe", "feeds": ["mission"], "id": 1})
+                task = asyncio.ensure_future(handle(ws))
+                await asyncio.sleep(0.1)
+                # Spread the writes into bursts separated by more than one
+                # poll tick so the token bucket only partially refills
+                # between them -- a single instantaneous burst just drops
+                # one contiguous tail with no gap *between delivered frames*,
+                # which wouldn't exercise what §6.3 cares about.
+                for chunk in range(6):
+                    with self.log_path.open("a", encoding="utf-8") as fh:
+                        for i in range(5):
+                            n = chunk * 5 + i
+                            oid = f"{n:08x}-0000-0000-0000-000000000000"
+                            fh.write(upsert.format(ms=n % 1000, oid=oid))
+                    await asyncio.sleep(0.35)
+                ws.end()
+                await task
+
+        self._run(scenario())
+
+        seqs = [f["seq"] for f in ws.telemetry_frames("mission")]
+        self.assertGreater(len(seqs), 0)
+        self.assertLess(len(seqs), 30)  # the rate cap must have dropped some
+        gaps = [b - a for a, b in zip(seqs, seqs[1:])]
+        self.assertTrue(any(gap > 1 for gap in gaps), "expected a seq gap from a dropped frame")
+
+
 if __name__ == "__main__":
     unittest.main()

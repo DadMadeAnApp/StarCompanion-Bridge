@@ -70,6 +70,20 @@ import websockets
 from pynput.keyboard import Key, KeyCode, Controller
 from pynput.mouse import Button, Controller as MouseController
 
+from telemetry.parsers import FeedRouter
+from telemetry.session import TelemetrySession
+from telemetry.tailer import LogTailer, default_log_path
+
+PARSER_BUILD = "12344265"   # the build these parsers were verified against
+TELEMETRY_MAX_PER_SECOND = 20   # backstop only; observed peak is well under 2/min
+_log_path_override: Path | None = None
+
+
+def _iso_now() -> str:
+    """UTC timestamp in the same shape as the log's own ts (millisecond Z)."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
+
 # ── Config ─────────────────────────────────────────────────────────────────────
 PORT = 8765
 MAX_HOLD_SECONDS = 10.0      # a stuck hold means a stuck key in-game
@@ -591,6 +605,14 @@ async def _dispatch(msg: dict) -> tuple[bool, str | None]:
     if kind == "ping":
         return True, None
 
+    if kind in ("subscribe", "unsubscribe"):
+        # Defensive only — unreachable today. The message loop in `handle`
+        # intercepts these types and `continue`s before `_run_command` (and
+        # therefore this function) is ever invoked for them. Kept so a future
+        # refactor that removes that `continue` fails safe instead of quietly
+        # depending on this branch.
+        return True, None
+
     return False, f"unknown message type {kind!r}"
 
 
@@ -668,6 +690,64 @@ def make_handler(token: str | None):
         logging.info(f"App connected  {peer}")
         pending: set[asyncio.Task] = set()
 
+        log_path = _log_path_override or default_log_path()
+        tailer = LogTailer(log_path) if log_path else None
+        session = TelemetrySession(
+            game_build=tailer.game_build if tailer else None,
+            parser_build=PARSER_BUILD,
+            log_found=tailer is not None,
+        )
+        feed_task: asyncio.Task | None = None
+
+        async def pump() -> None:
+            """Forward whitelisted records to this connection until it closes."""
+            nonlocal feed_task
+            router = FeedRouter()
+            limiter_out = _RateLimiter(TELEMETRY_MAX_PER_SECOND)
+            # TELEMETRY_HANDOFF §6.1: the initial gameRunning frame is sent at
+            # subscribe time (see below); this tracks the transition back to
+            # running so a game that (re)starts mid-session while still
+            # connected gets its own gameRunning:true, not just the one-shot
+            # snapshot from subscribe.
+            was_stale = tailer.is_stale()
+            try:
+                async for record in tailer.watch():
+                    if was_stale:
+                        was_stale = False
+                        resumed = session.next_frame(
+                            "context", {"gameRunning": True}, ts=_iso_now()
+                        )
+                        if resumed is not None:
+                            with contextlib.suppress(Exception):
+                                await ws.send(json.dumps(resumed))
+                    routed = router.route(record)
+                    if not routed:
+                        continue
+                    feed, event = routed
+                    ts = record[1:record.index(">")] if ">" in record else ""
+                    # Build (and thus advance seq) before checking the limiter, so a
+                    # dropped frame still burns a sequence number. That's what lets the
+                    # client detect the drop purely by observing a gap in seq (§6.3).
+                    frame = session.next_frame(feed, event, ts)
+                    if frame is None:
+                        continue
+                    if not limiter_out.allow():
+                        logging.warning("Telemetry rate cap hit — frame dropped")
+                        continue
+                    with contextlib.suppress(Exception):
+                        await ws.send(json.dumps(frame))
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                logging.warning(f"Telemetry pump stopped: {e}")
+            finally:
+                # However the pump ends (a benign tailer error, an unexpected
+                # exception, or plain completion), clear feed_task so a
+                # resubscribe on this connection restarts it instead of the
+                # double-start guard below silently no-op'ing forever
+                # against a task that already died.
+                feed_task = None
+
         try:
             async for raw in ws:
                 if len(raw) > MAX_MESSAGE_BYTES:
@@ -686,6 +766,47 @@ def make_handler(token: str | None):
                     logging.warning(f"Expected a JSON object, got {type(msg).__name__}")
                     continue
 
+                if msg.get("type") in ("subscribe", "unsubscribe"):
+                    req_id = msg.get("id", 0)
+                    if msg["type"] == "subscribe":
+                        # Probe the file for real before acking. LogTailer's
+                        # __init__ suppresses OSError on the header read, so a
+                        # log that exists but can't be opened (locked by
+                        # another process, permissions) would otherwise still
+                        # look healthy here, ack ok:true, and only fail once
+                        # the pump tried to open it -- by which point the
+                        # client has nothing telling it why no frames ever
+                        # arrive. Map that case to the documented
+                        # "log locked" error instead (TELEMETRY_HANDOFF §6.2).
+                        if tailer is not None:
+                            try:
+                                tailer.probe()
+                            except OSError:
+                                ack = {"type": "ack", "ok": False, "id": req_id, "error": "log locked"}
+                            else:
+                                ack = session.subscribe(msg.get("feeds", []), req_id)
+                        else:
+                            ack = session.subscribe(msg.get("feeds", []), req_id)
+                        with contextlib.suppress(Exception):
+                            await ws.send(json.dumps(ack))
+                        if ack["ok"] and tailer is not None:
+                            # §6.1: report the current gameRunning state right
+                            # away. next_frame is a no-op unless this
+                            # connection actually subscribed to "context".
+                            snapshot = session.next_frame(
+                                "context", {"gameRunning": not tailer.is_stale()}, ts=_iso_now()
+                            )
+                            if snapshot is not None:
+                                with contextlib.suppress(Exception):
+                                    await ws.send(json.dumps(snapshot))
+                            if feed_task is None:
+                                feed_task = asyncio.create_task(pump())
+                    else:
+                        ack = session.unsubscribe(req_id)
+                        with contextlib.suppress(Exception):
+                            await ws.send(json.dumps(ack))
+                    continue
+
                 # Run the command as a task so a multi-second hold doesn't
                 # stall reads; _input_lock keeps the injections ordered.
                 task = asyncio.create_task(_run_command(ws, msg))
@@ -701,6 +822,10 @@ def make_handler(token: str | None):
             if pending:
                 # Let the cancelled holds run their release handlers.
                 await asyncio.gather(*pending, return_exceptions=True)
+            if feed_task is not None:
+                feed_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await feed_task
             logging.info(f"App disconnected  {peer}")
 
     return handle
@@ -793,11 +918,23 @@ def _parse_options() -> int:
         "--port", type=int, default=PORT,
         help=f"port to listen on (default {PORT})",
     )
+    parser.add_argument(
+        "--log", type=str, default=None, dest="log_path",
+        help="path to Game.log, for installs outside the default location "
+             "(default: auto-detected)",
+    )
     # Ignore unrecognised args rather than exiting — a stray argument from a
     # shortcut or file association shouldn't stop the bridge from starting.
     args, unknown = parser.parse_known_args()
     if unknown:
         print(f"[warn] ignoring unrecognised argument(s): {' '.join(unknown)}")
+
+    global _log_path_override
+    if args.log_path is not None:
+        candidate = Path(args.log_path)
+        if not candidate.exists():
+            _refuse_bad_log_path(candidate)
+        _log_path_override = candidate
 
     # Loudly reject the retired opt-outs rather than ignoring them: someone
     # using one believes the bridge is unauthenticated, and silently starting
@@ -811,6 +948,16 @@ def _parse_options() -> int:
         _refuse_no_auth(f"The INSECURE_NO_AUTH file is no longer supported.\nDelete it: {sentinel}")
 
     return args.port
+
+
+def _refuse_bad_log_path(candidate: Path) -> None:
+    print(f"\nERROR: --log path does not exist: {candidate}")
+    print("Not falling back to auto-detection — check the path and try again.")
+    # The pause is for a double-clicked window; suppress EOFError so a piped
+    # or headless run exits cleanly instead of dumping a traceback.
+    with contextlib.suppress(EOFError):
+        input("\nPress Enter to close...")
+    sys.exit(1)
 
 
 def _refuse_no_auth(detail: str) -> None:
