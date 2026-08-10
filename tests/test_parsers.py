@@ -84,5 +84,66 @@ class NotificationTests(unittest.TestCase):
         self.assertEqual(event["missionId"], "11111111-1111-1111-1111-111111111111")
 
 
+UPSERT = (
+    "<2026-08-08T02:49:20.967Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push "
+    "message for: mission_id 94c24d22-cf1f-4e79-bdce-b35f3ee499c0 - objective_id "
+    "04430bfc-cf39-c4e1-84c8-7203dacbc9a7 - state MISSION_OBJECTIVE_STATE_INPROGRESS - created 1 "
+    "- flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]"
+)
+TEXT = (
+    "<2026-08-08T02:49:53.697Z> [Notice] <CMissionLogEntry::UpdateActiveObjective> Objective "
+    "updated id=04430bfc-cf39-c4e1-84c8-7203dacbc9a7, flags=ShowInLog|LocalOnlyObjective|, "
+    "hidden=0, hiddenInUI=0, markerHidden=0, uiDisplay[Priority=1][Text=Go to ~mission(Location)] "
+    "[Team_MissionFeatures][Missions]"
+)
+
+
+class ObjectiveTests(unittest.TestCase):
+
+    def test_parses_the_upsert(self):
+        event = parsers.parse_objective_upserted(UPSERT)
+        self.assertEqual(event["missionId"], "94c24d22-cf1f-4e79-bdce-b35f3ee499c0")
+        self.assertEqual(event["objectiveId"], "04430bfc-cf39-c4e1-84c8-7203dacbc9a7")
+        self.assertEqual(event["state"], "INPROGRESS")
+        self.assertTrue(event["created"])
+        self.assertEqual(event["flags"], ["ShowInLog", "RespectInheritedVisibility"])
+
+    def test_parses_the_text_line(self):
+        event = parsers.parse_objective_text(TEXT)
+        self.assertEqual(event["objectiveId"], "04430bfc-cf39-c4e1-84c8-7203dacbc9a7")
+        self.assertEqual(event["textRaw"], "Go to ~mission(Location)")
+        self.assertFalse(event["hiddenInUI"])
+
+    def test_keeps_printf_placeholders_verbatim(self):
+        record = TEXT.replace("Go to ~mission(Location)", "Waves Defeated: %ls")
+        self.assertEqual(parsers.parse_objective_text(record)["textRaw"], "Waves Defeated: %ls")
+
+    def test_join_emits_only_when_both_halves_have_arrived(self):
+        table = parsers.ObjectiveTable()
+        self.assertIsNone(table.ingest(UPSERT))
+        event = table.ingest(TEXT)
+        self.assertIsNotNone(event)
+        self.assertEqual(event["missionId"], "94c24d22-cf1f-4e79-bdce-b35f3ee499c0")
+        self.assertEqual(event["textRaw"], "Go to ~mission(Location)")
+        self.assertEqual(event["state"], "INPROGRESS")
+
+    def test_join_works_when_the_text_line_arrives_first(self):
+        table = parsers.ObjectiveTable()
+        self.assertIsNone(table.ingest(TEXT))
+        self.assertIsNotNone(table.ingest(UPSERT))
+
+    def test_hidden_is_distinct_from_hidden_in_ui(self):
+        self.assertFalse(parsers.ObjectiveTable.is_visible(["Hidden", "RespectInheritedVisibility"], False))
+        self.assertFalse(parsers.ObjectiveTable.is_visible(["RespectInheritedVisibility"], False))
+        self.assertTrue(parsers.ObjectiveTable.is_visible(["ShowInLog"], False))
+        self.assertFalse(parsers.ObjectiveTable.is_visible(["ShowInLog"], True))
+
+    def test_invisible_objectives_are_never_emitted(self):
+        table = parsers.ObjectiveTable()
+        hidden_upsert = UPSERT.replace("flags=ShowInLog|", "flags=Hidden|")
+        table.ingest(hidden_upsert)
+        self.assertIsNone(table.ingest(TEXT.replace("flags=ShowInLog|", "flags=Hidden|")))
+
+
 if __name__ == "__main__":
     unittest.main()
