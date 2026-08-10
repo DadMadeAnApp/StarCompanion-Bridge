@@ -78,6 +78,12 @@ PARSER_BUILD = "12344265"   # the build these parsers were verified against
 TELEMETRY_MAX_PER_SECOND = 20   # backstop only; observed peak is well under 2/min
 _log_path_override: Path | None = None
 
+
+def _iso_now() -> str:
+    """UTC timestamp in the same shape as the log's own ts (millisecond Z)."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
+
 # ── Config ─────────────────────────────────────────────────────────────────────
 PORT = 8765
 MAX_HOLD_SECONDS = 10.0      # a stuck hold means a stuck key in-game
@@ -695,10 +701,25 @@ def make_handler(token: str | None):
 
         async def pump() -> None:
             """Forward whitelisted records to this connection until it closes."""
+            nonlocal feed_task
             router = FeedRouter()
             limiter_out = _RateLimiter(TELEMETRY_MAX_PER_SECOND)
+            # TELEMETRY_HANDOFF §6.1: the initial gameRunning frame is sent at
+            # subscribe time (see below); this tracks the transition back to
+            # running so a game that (re)starts mid-session while still
+            # connected gets its own gameRunning:true, not just the one-shot
+            # snapshot from subscribe.
+            was_stale = tailer.is_stale()
             try:
                 async for record in tailer.watch():
+                    if was_stale:
+                        was_stale = False
+                        resumed = session.next_frame(
+                            "context", {"gameRunning": True}, ts=_iso_now()
+                        )
+                        if resumed is not None:
+                            with contextlib.suppress(Exception):
+                                await ws.send(json.dumps(resumed))
                     routed = router.route(record)
                     if not routed:
                         continue
@@ -719,6 +740,13 @@ def make_handler(token: str | None):
                 raise
             except Exception as e:
                 logging.warning(f"Telemetry pump stopped: {e}")
+            finally:
+                # However the pump ends (a benign tailer error, an unexpected
+                # exception, or plain completion), clear feed_task so a
+                # resubscribe on this connection restarts it instead of the
+                # double-start guard below silently no-op'ing forever
+                # against a task that already died.
+                feed_task = None
 
         try:
             async for raw in ws:
@@ -741,13 +769,42 @@ def make_handler(token: str | None):
                 if msg.get("type") in ("subscribe", "unsubscribe"):
                     req_id = msg.get("id", 0)
                     if msg["type"] == "subscribe":
-                        ack = session.subscribe(msg.get("feeds", []), req_id)
-                        if ack["ok"] and feed_task is None and tailer is not None:
-                            feed_task = asyncio.create_task(pump())
+                        # Probe the file for real before acking. LogTailer's
+                        # __init__ suppresses OSError on the header read, so a
+                        # log that exists but can't be opened (locked by
+                        # another process, permissions) would otherwise still
+                        # look healthy here, ack ok:true, and only fail once
+                        # the pump tried to open it -- by which point the
+                        # client has nothing telling it why no frames ever
+                        # arrive. Map that case to the documented
+                        # "log locked" error instead (TELEMETRY_HANDOFF §6.2).
+                        if tailer is not None:
+                            try:
+                                tailer.probe()
+                            except OSError:
+                                ack = {"type": "ack", "ok": False, "id": req_id, "error": "log locked"}
+                            else:
+                                ack = session.subscribe(msg.get("feeds", []), req_id)
+                        else:
+                            ack = session.subscribe(msg.get("feeds", []), req_id)
+                        with contextlib.suppress(Exception):
+                            await ws.send(json.dumps(ack))
+                        if ack["ok"] and tailer is not None:
+                            # §6.1: report the current gameRunning state right
+                            # away. next_frame is a no-op unless this
+                            # connection actually subscribed to "context".
+                            snapshot = session.next_frame(
+                                "context", {"gameRunning": not tailer.is_stale()}, ts=_iso_now()
+                            )
+                            if snapshot is not None:
+                                with contextlib.suppress(Exception):
+                                    await ws.send(json.dumps(snapshot))
+                            if feed_task is None:
+                                feed_task = asyncio.create_task(pump())
                     else:
                         ack = session.unsubscribe(req_id)
-                    with contextlib.suppress(Exception):
-                        await ws.send(json.dumps(ack))
+                        with contextlib.suppress(Exception):
+                            await ws.send(json.dumps(ack))
                     continue
 
                 # Run the command as a task so a multi-second hold doesn't

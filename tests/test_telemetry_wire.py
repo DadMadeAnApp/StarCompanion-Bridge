@@ -54,23 +54,17 @@ class FrameTests(unittest.TestCase):
         self.session.unsubscribe(req_id=9)
         self.assertIsNone(self.session.next_frame("mission", {"text": "a"}, ts="t"))
 
-    def test_dropped_frames_still_burn_a_seq_so_the_client_sees_a_gap(self):
-        # Mirrors the pump's ordering: build the frame (advancing seq) first,
-        # then decide whether to actually deliver it. A frame that is built
-        # but not delivered must still consume a sequence number, so the
-        # client can detect the drop purely from a gap in the numbers it
-        # receives (TELEMETRY_HANDOFF.md §6.3) rather than silently rendering
-        # an incomplete-but-believed-complete journal.
-        sent_seqs = []
-        for i in range(5):
-            frame = self.session.next_frame("mission", {"text": str(i)}, ts="t")
-            deliver = i % 2 == 0  # simulate the rate limiter dropping every other frame
-            if deliver:
-                sent_seqs.append(frame["seq"])
-
-        self.assertGreater(len(sent_seqs), 1)
-        gaps = [b - a for a, b in zip(sent_seqs, sent_seqs[1:])]
-        self.assertTrue(any(gap > 1 for gap in gaps))
+    def test_next_frame_always_advances_seq_even_if_the_caller_never_delivers_it(self):
+        """next_frame's own contract: it must burn a seq on every call,
+        regardless of what the caller does with the result -- that's what
+        lets a real dropped frame (decided elsewhere, by the pump's rate
+        limiter) show up as a gap. The pump's actual delivery-vs-drop
+        decision is exercised end-to-end in
+        test_bridge_server.TelemetryHandlerTests.test_pump_burns_seq_on_a_rate_limited_frame_end_to_end,
+        not reimplemented here."""
+        first = self.session.next_frame("mission", {"text": "a"}, ts="t")
+        second = self.session.next_frame("mission", {"text": "b"}, ts="t")
+        self.assertEqual((first["seq"], second["seq"]), (0, 1))
 
 
 if __name__ == "__main__":
