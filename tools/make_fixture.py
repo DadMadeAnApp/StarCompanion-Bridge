@@ -112,19 +112,23 @@ def main(src: str, dest: str) -> None:
             if continuation_count > 0:
                 wrapped_count += 1
 
-            # Keep up to 3 trailing lines after this record and its continuations
-            # These may be noise lines like [SPAM] or genuine continuations of other records
-            # Stop if we encounter a new record (indicated by > [ pattern)
+            # Keep up to 3 trailing lines after this record and its continuations.
+            # Include only non-whitelisted lines (noise like [SPAM] and genuine continuations).
+            # This reproduces the real log's interleaving of noise records with whitelisted ones.
             trailing_kept = 0
-            while j < len(lines) and trailing_kept < 3:
-                nxt = lines[j]
-                if re.search(r"> \[", nxt):
-                    # Hit a new record, don't include it
+            trailing_j = j
+            while trailing_j < len(lines) and trailing_kept < 3:
+                nxt = lines[trailing_j]
+                # Only include non-whitelisted lines as trailing content
+                if not any(tag in nxt for tag in KEEP_TAGS):
+                    out.append(nxt)
+                    trailing_kept += 1
+                    trailing_j += 1
+                else:
+                    # Hit a whitelisted record; stop collecting trailing lines.
+                    # It will be processed by the main loop.
                     break
-                out.append(nxt)
-                trailing_kept += 1
-                j += 1
-            skip_until = j
+            skip_until = trailing_j
 
         elif any(tag in line for tag in CHATTER_TAGS) and kept_chatter < 40:
             out.append(line)
@@ -144,18 +148,20 @@ def main(src: str, dest: str) -> None:
             if continuation_count > 0:
                 wrapped_count += 1
 
-            # Keep up to 3 trailing lines after chatter records too
-            # Stop if we encounter a new record (indicated by > [ pattern)
+            # Keep up to 3 trailing lines after chatter records too.
+            # Only include non-whitelisted lines.
             trailing_kept = 0
-            while j < len(lines) and trailing_kept < 3:
-                nxt = lines[j]
-                if re.search(r"> \[", nxt):
-                    # Hit a new record, don't include it
+            trailing_j = j
+            while trailing_j < len(lines) and trailing_kept < 3:
+                nxt = lines[trailing_j]
+                if not any(tag in nxt for tag in KEEP_TAGS):
+                    out.append(nxt)
+                    trailing_kept += 1
+                    trailing_j += 1
+                else:
+                    # Hit a whitelisted record; stop collecting trailing lines.
                     break
-                out.append(nxt)
-                trailing_kept += 1
-                j += 1
-            skip_until = j
+            skip_until = trailing_j
             kept_chatter += 1
 
     # Add a synthetic wrapped record with a continuation that has no timestamp.
