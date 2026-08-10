@@ -600,7 +600,11 @@ async def _dispatch(msg: dict) -> tuple[bool, str | None]:
         return True, None
 
     if kind in ("subscribe", "unsubscribe"):
-        # Handled in the connection handler, which owns per-connection state.
+        # Defensive only — unreachable today. The message loop in `handle`
+        # intercepts these types and `continue`s before `_run_command` (and
+        # therefore this function) is ever invoked for them. Kept so a future
+        # refactor that removes that `continue` fails safe instead of quietly
+        # depending on this branch.
         return True, None
 
     return False, f"unknown message type {kind!r}"
@@ -698,16 +702,19 @@ def make_handler(token: str | None):
                     routed = router.route(record)
                     if not routed:
                         continue
-                    if not limiter_out.allow():
-                        # Dropping creates a seq gap, which the app surfaces.
-                        logging.warning("Telemetry rate cap hit — frame dropped")
-                        continue
                     feed, event = routed
                     ts = record[1:record.index(">")] if ">" in record else ""
+                    # Build (and thus advance seq) before checking the limiter, so a
+                    # dropped frame still burns a sequence number. That's what lets the
+                    # client detect the drop purely by observing a gap in seq (§6.3).
                     frame = session.next_frame(feed, event, ts)
-                    if frame:
-                        with contextlib.suppress(Exception):
-                            await ws.send(json.dumps(frame))
+                    if frame is None:
+                        continue
+                    if not limiter_out.allow():
+                        logging.warning("Telemetry rate cap hit — frame dropped")
+                        continue
+                    with contextlib.suppress(Exception):
+                        await ws.send(json.dumps(frame))
             except asyncio.CancelledError:
                 raise
             except Exception as e:
