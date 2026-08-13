@@ -13,29 +13,128 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import os
+import re
 import time
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Iterator
 
 from telemetry.parsers import RECORD_START, parse_build
 
-# Note the folder is "Robert Space Industries", not "Roberts".
-_DEFAULT_DIRS = (
-    r"C:\Program Files\Roberts Space Industries\StarCitizen\LIVE",
-    r"C:\Program Files\Robert Space Industries\StarCitizen\LIVE",
+# CIG's own folder is "Roberts Space Industries", but real installs in the wild
+# also carry the singular "Robert Space Industries" (the reference machine's F:
+# drive is spelled that way) — try both everywhere, never just one.
+_INSTALL_PARENTS = ("Roberts Space Industries", "Robert Space Industries")
+
+# LIVE first: it's what a player is almost always running, and preferring a
+# stale PTU log over a live one would tail a file nothing is writing.
+_CHANNELS = ("LIVE", "PTU", "EPTU", "TECH-PREVIEW", "HOTFIX")
+
+# Prefixes under a drive root where the install parent commonly sits. "" covers
+# the very common "moved the whole folder to D:\ or F:\" case.
+_ROOT_PREFIXES = ("", "Program Files", "Program Files (x86)", "Games")
+
+_DEFAULT_DIRS = tuple(
+    rf"C:\Program Files\{parent}\StarCitizen\LIVE" for parent in _INSTALL_PARENTS
 )
 STALE_AFTER_SECONDS = 90.0
 
+# The launcher records the install path in plaintext in its own log — the only
+# authoritative, user-specific source available, since the "launcher store.json"
+# beside it is Electron safeStorage-encrypted and unreadable. Paths appear there
+# JSON-escaped ("F:\\Robert Space Industries\\..."), so accept one or two
+# backslashes per separator and unescape after matching. Anchored on the
+# StarCitizen\<CHANNEL> tail so a match ends at a real directory instead of
+# running on into the rest of the log line.
+LAUNCHER_LOG = Path.home() / "AppData" / "Roaming" / "rsilauncher" / "logs" / "log.log"
+_LAUNCHER_PATH = re.compile(
+    r"[A-Za-z]:(?:\\{1,2}[^\\/:*?\"<>|\r\n]+)*?\\{1,2}StarCitizen\\{1,2}"
+    # The channel must end on a non-word boundary so "…\LIVESTREAM" is rejected
+    # while "…\LIVE now", "…\LIVE\loginData.json" and '…\LIVE"' all match. A
+    # lookahead demanding a path separator would be wrong: the log names these
+    # dirs mid-sentence far more often than not.
+    r"(?:" + "|".join(_CHANNELS) + r")(?![A-Za-z0-9_])"
+)
 
-def default_log_path() -> Path | None:
+
+def launcher_log_candidates(text: str) -> list[Path]:
+    """Install dirs named in the launcher's log, best candidate first.
+
+    Pure text in, paths out — no I/O, so this tests without a launcher present.
+    Later mentions beat earlier ones (the log is append-only, so the newest
+    mention reflects the current install), and LIVE outranks every other channel
+    regardless of position.
+    """
+    seen: list[str] = []
+    for match in _LAUNCHER_PATH.finditer(text):
+        raw = match.group(0).replace("\\\\", "\\")
+        if raw not in seen:
+            seen.append(raw)
+    # Reverse for newest-first, then promote LIVE without disturbing that order
+    # (sort is stable, so same-channel candidates keep their newest-first rank).
+    ordered = list(reversed(seen))
+    ordered.sort(key=lambda p: 0 if p.upper().endswith("LIVE") else 1)
+    return [Path(p) for p in ordered]
+
+
+def _drive_roots() -> list[Path]:
+    """Every drive root that exists, C: first."""
+    roots = []
+    for letter in "CDEFGHIJKLMNOPQRSTUVWXYZAB":
+        root = Path(f"{letter}:\\")
+        try:
+            if root.exists():
+                roots.append(root)
+        except OSError:
+            continue
+    return roots
+
+
+def _guessed_dirs(roots: list[Path]) -> Iterator[Path]:
+    """Conventional install dirs under each drive root.
+
+    Deliberately a bounded set of exact paths rather than a recursive scan: a
+    full walk of a multi-terabyte drive can take minutes and thrashes the disk
+    at the exact moment the user is playing the game.
+    """
+    for root in roots:
+        for prefix in _ROOT_PREFIXES:
+            base = root / prefix if prefix else root
+            for parent in _INSTALL_PARENTS:
+                for channel in _CHANNELS:
+                    yield base / parent / "StarCitizen" / channel
+
+
+def default_log_path(
+    launcher_log: Path | None = None,
+    roots: list[Path] | None = None,
+) -> Path | None:
     """Best guess at the install's Game.log, or None if it can't be found.
 
-    The bridge cannot always infer the install path — players move it to another
-    drive routinely (the reference session ran from F:\\). A None here becomes the
-    'log not found' subscribe error, which prompts the user for the path.
+    Players move the install off C: routinely (the reference session ran from
+    F:\\), so the fixed C:\\Program Files pair is not enough on its own. Three
+    sources, cheapest and most authoritative first: the historical defaults, then
+    the RSI launcher's own log, then conventional dirs on every drive.
+
+    A None here still becomes the 'log not found' subscribe error, which prompts
+    the user for the path — and --log always overrides all of this.
     """
     for base in _DEFAULT_DIRS:
         candidate = Path(base) / "Game.log"
+        if candidate.exists():
+            return candidate
+
+    log = LAUNCHER_LOG if launcher_log is None else launcher_log
+    try:
+        text = log.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        text = ""
+    for directory in launcher_log_candidates(text):
+        candidate = directory / "Game.log"
+        if candidate.exists():
+            return candidate
+
+    for directory in _guessed_dirs(_drive_roots() if roots is None else roots):
+        candidate = directory / "Game.log"
         if candidate.exists():
             return candidate
     return None

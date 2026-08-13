@@ -2,8 +2,10 @@ import asyncio
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from telemetry import parsers, tailer
+from telemetry.tailer import launcher_log_candidates
 
 
 class TailerTests(unittest.TestCase):
@@ -163,14 +165,23 @@ class TailerTests(unittest.TestCase):
         t.probe()  # must not raise
 
     def test_probe_raises_on_an_unreadable_file(self):
+        """Patch the open rather than chmod(0): on Windows chmod only toggles
+        the read-only bit and cannot revoke read permission, so a chmod-based
+        version of this test passes on POSIX and silently fails here. Patching
+        is also the more faithful simulation -- the case probe() exists for is
+        the game or an AV product holding a share-lock, which surfaces as
+        PermissionError from open(), not as a mode change."""
         t = tailer.LogTailer(self.path)
-        self.path.chmod(0)
-        self.addCleanup(lambda: self.path.chmod(0o644))
-        try:
+        real_open = Path.open
+
+        def deny(self_path, *a, **kw):
+            if self_path == self.path:
+                raise PermissionError(13, "Permission denied")
+            return real_open(self_path, *a, **kw)
+
+        with mock.patch.object(Path, "open", deny):
             with self.assertRaises(OSError):
                 t.probe()
-        finally:
-            self.path.chmod(0o644)
 
     def test_watch_yields_control_during_a_line_burst(self):
         """A burst of many buffered lines must not run the whole while-loop
@@ -238,6 +249,187 @@ class TailerTests(unittest.TestCase):
         self.assertIn("real record", seen[0])
         self.assertNotIn("Radiation Heat", seen[0])
         self.assertIn("SPAM 135", seen[1])
+
+
+class LauncherLogCandidateTests(unittest.TestCase):
+    """The launcher log is the only authoritative source for a moved install."""
+
+    def test_parses_a_json_escaped_path(self):
+        # Exactly how the launcher writes it: doubled backslashes.
+        text = r'{"path":"F:\\Robert Space Industries\\StarCitizen\\LIVE"}'
+        self.assertEqual(
+            launcher_log_candidates(text),
+            [Path(r"F:\Robert Space Industries\StarCitizen\LIVE")],
+        )
+
+    def test_parses_a_single_backslash_path(self):
+        text = r"installing to F:\Robert Space Industries\StarCitizen\LIVE now"
+        self.assertEqual(
+            launcher_log_candidates(text),
+            [Path(r"F:\Robert Space Industries\StarCitizen\LIVE")],
+        )
+
+    def test_accepts_the_plural_spelling_too(self):
+        text = r"D:\\Roberts Space Industries\\StarCitizen\\LIVE"
+        self.assertEqual(
+            launcher_log_candidates(text),
+            [Path(r"D:\Roberts Space Industries\StarCitizen\LIVE")],
+        )
+
+    def test_live_outranks_ptu_regardless_of_position(self):
+        """A PTU mention arriving later must not outrank LIVE: tailing a stale
+        PTU log would follow a file nothing is writing."""
+        text = (
+            r"E:\\RSI\\StarCitizen\\LIVE" "\n"
+            r"E:\\RSI\\StarCitizen\\PTU" "\n"
+        )
+        got = launcher_log_candidates(text)
+        self.assertEqual(got[0], Path(r"E:\RSI\StarCitizen\LIVE"))
+        self.assertIn(Path(r"E:\RSI\StarCitizen\PTU"), got)
+
+    def test_the_newest_mention_of_a_channel_wins(self):
+        """The log is append-only, so a later mention reflects a move."""
+        text = (
+            r"C:\\Old\\StarCitizen\\PTU" "\n"
+            r"F:\\New\\StarCitizen\\PTU" "\n"
+        )
+        self.assertEqual(
+            launcher_log_candidates(text)[0], Path(r"F:\New\StarCitizen\PTU")
+        )
+
+    def test_deduplicates_repeated_mentions(self):
+        text = (r"F:\\RSI\\StarCitizen\\LIVE" "\n") * 40
+        self.assertEqual(len(launcher_log_candidates(text)), 1)
+
+    def test_a_path_with_a_trailing_filename_still_matches_the_directory(self):
+        """The log mentions files inside the install constantly
+        ('...\\LIVE\\loginData.json'). The match must stop at the channel dir."""
+        text = r"F:\\RSI\\StarCitizen\\LIVE\\loginData.json for LIVE"
+        self.assertEqual(
+            launcher_log_candidates(text), [Path(r"F:\RSI\StarCitizen\LIVE")]
+        )
+
+    def test_ignores_a_lookalike_that_is_not_a_channel(self):
+        text = r"F:\\RSI\\StarCitizen\\LIVESTREAM"
+        self.assertEqual(launcher_log_candidates(text), [])
+
+    def test_empty_text_yields_nothing(self):
+        self.assertEqual(launcher_log_candidates(""), [])
+
+
+class DefaultLogPathTests(unittest.TestCase):
+    """Discovery must not depend on this machine's real install, so the
+    hardcoded defaults are patched out in every case here."""
+
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.root = Path(self.dir.name)
+        self.addCleanup(self.dir.cleanup)
+        patcher = mock.patch.object(tailer, "_DEFAULT_DIRS", ())
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.missing_launcher_log = self.root / "no-such-launcher.log"
+
+    def _install(self, base: Path, parent="Robert Space Industries", channel="LIVE"):
+        d = base / parent / "StarCitizen" / channel
+        d.mkdir(parents=True, exist_ok=True)
+        log = d / "Game.log"
+        log.write_text("", encoding="utf-8")
+        return log
+
+    def test_falls_back_to_the_default_dirs_first(self):
+        expected = self._install(self.root)
+        with mock.patch.object(tailer, "_DEFAULT_DIRS", (str(expected.parent),)):
+            self.assertEqual(
+                tailer.default_log_path(
+                    launcher_log=self.missing_launcher_log, roots=[]
+                ),
+                expected,
+            )
+
+    def test_finds_an_install_named_only_in_the_launcher_log(self):
+        """The regression this whole change exists for: an install on another
+        drive, under no conventional folder name at all."""
+        odd = self.root / "somewhere odd"
+        expected = self._install(odd)
+        launcher_log = self.root / "log.log"
+        launcher_log.write_text(
+            'installing to "%s"' % str(expected.parent).replace("\\", "\\\\"),
+            encoding="utf-8",
+        )
+        self.assertEqual(
+            tailer.default_log_path(launcher_log=launcher_log, roots=[]), expected
+        )
+
+    def test_finds_a_conventional_install_on_a_non_c_drive(self):
+        """No launcher log at all — the drive-root sweep must still find it."""
+        expected = self._install(self.root)
+        self.assertEqual(
+            tailer.default_log_path(
+                launcher_log=self.missing_launcher_log, roots=[self.root]
+            ),
+            expected,
+        )
+
+    def test_finds_a_conventional_install_under_program_files(self):
+        expected = self._install(self.root / "Program Files")
+        self.assertEqual(
+            tailer.default_log_path(
+                launcher_log=self.missing_launcher_log, roots=[self.root]
+            ),
+            expected,
+        )
+
+    def test_prefers_live_over_ptu_in_the_drive_sweep(self):
+        self._install(self.root, channel="PTU")
+        live = self._install(self.root, channel="LIVE")
+        self.assertEqual(
+            tailer.default_log_path(
+                launcher_log=self.missing_launcher_log, roots=[self.root]
+            ),
+            live,
+        )
+
+    def test_returns_none_when_there_is_no_install_anywhere(self):
+        """None is the contract: it becomes the 'log not found' subscribe ack,
+        which is what prompts the user for a path."""
+        self.assertIsNone(
+            tailer.default_log_path(
+                launcher_log=self.missing_launcher_log, roots=[self.root]
+            )
+        )
+
+    def test_an_unreadable_launcher_log_is_not_fatal(self):
+        """Fail soft, like everything else in the telemetry path: fall through
+        to the drive sweep rather than raising out of subscribe."""
+        expected = self._install(self.root)
+        unreadable = self.root / "locked.log"
+        unreadable.write_text("whatever", encoding="utf-8")
+        real_read = Path.read_text
+
+        def deny(self_path, *a, **kw):
+            if self_path == unreadable:
+                raise PermissionError(13, "Permission denied")
+            return real_read(self_path, *a, **kw)
+
+        with mock.patch.object(Path, "read_text", deny):
+            self.assertEqual(
+                tailer.default_log_path(launcher_log=unreadable, roots=[self.root]),
+                expected,
+            )
+
+    def test_a_launcher_log_naming_a_vanished_install_falls_through(self):
+        """The launcher remembers uninstalled/moved paths forever, so a named
+        dir that no longer holds a Game.log must not shadow a real one."""
+        expected = self._install(self.root)
+        launcher_log = self.root / "log.log"
+        launcher_log.write_text(
+            r"Z:\\Gone\\StarCitizen\\LIVE", encoding="utf-8"
+        )
+        self.assertEqual(
+            tailer.default_log_path(launcher_log=launcher_log, roots=[self.root]),
+            expected,
+        )
 
 
 if __name__ == "__main__":
