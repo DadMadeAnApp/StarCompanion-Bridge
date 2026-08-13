@@ -1,6 +1,6 @@
 """Tests for bridge_server.py's key-name resolution.
 
-Run: python3 -m unittest test_bridge_server -v
+Run: python -m unittest discover -v   (from the repo root)
 
 Stubs pynput (and bridge_server's other bootstrap deps) before importing
 bridge_server. Two independent reasons for the pynput stub specifically:
@@ -338,11 +338,22 @@ class TelemetryHandlerTests(unittest.TestCase):
         self.assertTrue(acks[1]["ok"])
 
     def test_log_locked_is_reported_as_ok_false_not_a_silent_hang(self):
-        """CRITICAL 1a: an existing-but-unopenable log must not ack ok:true."""
-        self.log_path.chmod(0)
-        self.addCleanup(self.log_path.chmod, 0o644)
+        """CRITICAL 1a: an existing-but-unopenable log must not ack ok:true.
 
+        Denies the open by patching Path.open rather than chmod(0), because
+        on Windows chmod only toggles the read-only bit and cannot revoke
+        read permission -- a chmod-based version of this test passes on POSIX
+        and silently fails here. Patching also models the real case better:
+        the game or an AV product holding a share-lock raises PermissionError
+        from open(), it does not change the file's mode.
+        """
         ws = FakeWebSocket()
+        real_open = Path.open
+
+        def deny(self_path, *a, **kw):
+            if self_path == self.log_path:
+                raise PermissionError(13, "Permission denied")
+            return real_open(self_path, *a, **kw)
 
         async def scenario():
             handle = bridge_server.make_handler(None)
@@ -352,8 +363,8 @@ class TelemetryHandlerTests(unittest.TestCase):
             ws.end()
             await task
 
-        self._run(scenario())
-        self.log_path.chmod(0o644)
+        with mock.patch.object(Path, "open", deny):
+            self._run(scenario())
 
         acks = [m for m in ws.sent if m.get("type") == "ack"]
         self.assertFalse(acks[0]["ok"])
