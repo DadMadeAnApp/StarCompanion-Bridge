@@ -5,7 +5,33 @@ parsing surface is testable on any platform without the game or Windows.
 
 Formats are undocumented and CIG rewrites them freely (the <Actor Death> format
 vanished in 4.9), so every parser fails soft: a line that does not match returns
-None rather than raising. Verified against Build(12344265), SC 4.9.188.
+None rather than raising.
+
+Build(12344265) / SC 4.9.188 note, 2026-08-13, from a real session: BOTH halves of
+an objective are logged INCONSISTENTLY, and neither can be relied on alone.
+
+- <ObjectiveUpserted> (state + flags) is a *server push* — the log says so. Two
+  contracts were accepted an hour apart and only the first got one.
+- <CMissionLogEntry::UpdateActiveObjective> (uiDisplay text) exists but is rarer
+  still: absent for both of those contracts, present for a later phase-driven
+  mission. It was first believed removed in this build, on the strength of a
+  session where it never fired — including with the in-game mission log open.
+  It is not removed; it is just not emitted for every objective.
+- The ObjectiveId-bearing <SHUDEvent_OnNotification> is the most consistent
+  source, appearing for every objective observed, and is the only text source
+  for the two that had no uiDisplay line.
+
+So all three feed ObjectiveTable and whichever arrives first wins. Text quality
+differs by source: uiDisplay gives "Confirm Status of Missing Person", while the
+notification gives "…Person: " — the trailing ': ' is the game's stripped %ls,
+kept deliberately (see strip_objective_prefix).
+
+The practical consequence for the app is that a *complete* objective list cannot
+be built from this log: visible objectives are never observed reaching COMPLETED
+(only hidden internal 'phase_…' entries are), so entries accumulate as
+permanently in-progress. That is why the client's Objectives section was cut on
+2026-08-13 — see the module-journal skill. The parsing here is still correct and
+still used by the mission feed.
 """
 from __future__ import annotations
 
@@ -72,17 +98,48 @@ _NOTIFICATION = re.compile(
     r"(?P<text>(?:(?!Added notification).)*?)"
     r"\" \[\d+\] to queue\."
     r"(?:(?!Added notification).)*?"
-    r"MissionId: \[(?P<mission>[0-9a-f-]+)\]",
+    r"MissionId: \[(?P<mission>[0-9a-f-]+)\]"
+    # ObjectiveId sits immediately after MissionId on the same line and is the
+    # empty "[]" for anything not tied to an objective (system chatter, and the
+    # "Contract Accepted: …" mission-title notification). Optional so a build
+    # that omits the field entirely still parses text+mission.
+    r"(?:, ObjectiveId: \[(?P<objective>[0-9a-f-]*)\])?",
     re.DOTALL,
 )
 
+# The notification that carries an objective's text prefixes it with this HUD
+# framing. Stripped for the objective row (where it is the objective's own text)
+# but never for the notification itself, which stays verbatim.
+OBJECTIVE_NOTIFICATION_PREFIX = "New Objective: "
+
 
 def parse_notification(record: str) -> dict | None:
-    """HUD notification text, verbatim including any trailing colon."""
+    """HUD notification text, verbatim including any trailing colon.
+
+    `objectiveId` is None unless this notification is tied to an objective; on
+    Build(12344265) that pairing is the only source of objective text.
+    """
     m = _NOTIFICATION.search(record)
     if not m:
         return None
-    return {"text": m.group("text"), "missionId": m.group("mission")}
+    objective = m.group("objective") or None
+    return {
+        "text": m.group("text"),
+        "missionId": m.group("mission"),
+        "objectiveId": objective,
+    }
+
+
+def strip_objective_prefix(text: str) -> str:
+    """Drop the 'New Objective: ' HUD framing, keeping everything else.
+
+    The trailing ': ' left by the game's stripped %ls placeholder stays — it is
+    documented as rendering literally, and inventing a value the game never
+    logged would be worse than a stray colon.
+    """
+    if text.startswith(OBJECTIVE_NOTIFICATION_PREFIX):
+        return text[len(OBJECTIVE_NOTIFICATION_PREFIX):]
+    return text
 
 
 _UPSERTED = re.compile(
@@ -179,13 +236,26 @@ class ObjectiveTable:
     other's visibility signal, the two are unioned and 'hidden' is sticky:
     once either half says hidden, later data can never revive it.
 
-    `_partial` is bounded to `_PARTIAL_CAP` entries (oldest-inserted evicted
-    first) so a long session's permanently-unpaired halves cannot grow this
-    table without bound. No clock/TTL — this module stays I/O-free.
+    On Build(12344265) the text half often does not arrive as its own record at
+    all (see the module docstring); the HUD notification carrying a matching
+    ObjectiveId supplies it instead, fed in via `ingest_notification_text`. Both
+    sources land in the same merge, so ordering and visibility behave identically
+    whichever supplies the text, and whichever arrives first wins.
+
+    Emitted text is also remembered per objective id, because a later state
+    change (INPROGRESS → COMPLETED) arrives as a bare <ObjectiveUpserted> with
+    no notification beside it. Without the cache that update would have no text,
+    fail the completeness check, and silently never emit — the same class of
+    bug as the one that made this whole feed empty.
+
+    `_partial` and `_texts` are each bounded to `_PARTIAL_CAP` entries
+    (oldest-inserted evicted first) so a long session cannot grow this table
+    without bound. No clock/TTL — this module stays I/O-free.
     """
 
     def __init__(self) -> None:
         self._partial: dict[str, dict] = {}
+        self._texts: dict[str, str] = {}
 
     @staticmethod
     def is_visible(flags: list[str], hidden_in_ui: bool) -> bool:
@@ -199,6 +269,14 @@ class ObjectiveTable:
             return False
         return "ShowInLog" in flags
 
+    def _remember_text(self, objective_id: str, text: str) -> None:
+        # Pop before re-inserting so insertion order stays "least recently
+        # seen first", which is what the eviction below relies on.
+        self._texts.pop(objective_id, None)
+        if len(self._texts) >= _PARTIAL_CAP:
+            self._texts.pop(next(iter(self._texts)))
+        self._texts[objective_id] = text
+
     def ingest(self, record: str) -> dict | None:
         """Feed one record. Returns a complete, visible objective or None."""
         upsert = parse_objective_upserted(record)
@@ -209,7 +287,27 @@ class ObjectiveTable:
             new_half = parse_objective_text(record)
             if not new_half:
                 return None
+        return self._merge(new_half, is_upsert)
 
+    def ingest_notification_text(self, objective_id: str, text_raw: str) -> dict | None:
+        """Text half sourced from a HUD notification's ObjectiveId pairing.
+
+        Contributes no flags and no hiddenInUI: a notification carries neither,
+        so visibility is decided entirely by the <ObjectiveUpserted> half. That
+        is the safe direction — an objective with no upsert never becomes
+        visible on the strength of a notification alone.
+        """
+        return self._merge(
+            {
+                "objectiveId": objective_id,
+                "textRaw": text_raw,
+                "flags": [],
+                "hiddenInUI": False,
+            },
+            is_upsert=False,
+        )
+
+    def _merge(self, new_half: dict, is_upsert: bool) -> dict | None:
         objective_id = new_half["objectiveId"]
         existing = self._partial.get(objective_id, {})
 
@@ -233,6 +331,13 @@ class ObjectiveTable:
             dict.fromkeys([*merged["_upsertFlags"], *merged["_textFlags"]])
         )
         merged["hiddenInUI"] = merged["_upsertHiddenInUI"] or merged["_textHiddenInUI"]
+
+        # Remember text as soon as it is known, and reuse it for a later
+        # state-change upsert that arrives with no text beside it.
+        if "textRaw" in merged:
+            self._remember_text(objective_id, merged["textRaw"])
+        elif objective_id in self._texts:
+            merged["textRaw"] = self._texts[objective_id]
 
         if "state" not in merged or "textRaw" not in merged:
             # Pop before re-inserting: dict insertion order is what backs the
@@ -265,19 +370,41 @@ class ObjectiveTable:
 
 
 class FeedRouter:
-    """Whitelist dispatch: record in, (feed, event) out, or None."""
+    """Whitelist dispatch: record in, list of (feed, event) out.
+
+    Returns a LIST, not a single pair: one notification record can legitimately
+    produce two events. An objective-bearing notification is both a real HUD
+    notification (its own feed, text verbatim) and the objective's text half
+    (completing a mission event). Collapsing that to one would mean choosing
+    between a missing notification and a permanently empty objective list.
+    """
 
     def __init__(self) -> None:
         self._objectives = ObjectiveTable()
 
-    def route(self, record: str) -> tuple[str, dict] | None:
+    def route(self, record: str) -> list[tuple[str, dict]]:
         if TAG_MISSION_UPSERT in record or TAG_MISSION_TEXT in record:
             event = self._objectives.ingest(record)
-            return ("mission", event) if event else None
+            return [("mission", event)] if event else []
         if TAG_NOTIFICATION in record:
-            event = parse_notification(record)
-            return ("notification", event) if event else None
+            parsed = parse_notification(record)
+            if not parsed:
+                return []
+            # The wire event stays {text, missionId}: objectiveId is used here
+            # to pair the halves and is deliberately not published, keeping the
+            # smallest payload (same reasoning as parse_location's player handle).
+            out: list[tuple[str, dict]] = [
+                ("notification", {"text": parsed["text"], "missionId": parsed["missionId"]})
+            ]
+            objective_id = parsed["objectiveId"]
+            if objective_id:
+                mission = self._objectives.ingest_notification_text(
+                    objective_id, strip_objective_prefix(parsed["text"])
+                )
+                if mission:
+                    out.append(("mission", mission))
+            return out
         if TAG_LOCATION in record:
             event = parse_location(record)
-            return ("context", event) if event else None
-        return None
+            return [("context", event)] if event else []
+        return []

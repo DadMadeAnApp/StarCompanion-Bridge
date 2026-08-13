@@ -281,26 +281,28 @@ class FeedRouterTests(unittest.TestCase):
     def test_routes_each_whitelisted_tag_to_its_feed(self):
         router = parsers.FeedRouter()
         router.route(UPSERT)
-        feed, event = router.route(TEXT)
+        (feed, event), = router.route(TEXT)
         self.assertEqual(feed, "mission")
         location = (
             "<2026-08-08T02:43:46.205Z> [Notice] <RequestLocationInventory> Player[TestPilot] "
             "requested inventory for Location[Stanton4_NewBabbage]"
         )
-        self.assertEqual(router.route(location)[0], "context")
+        self.assertEqual(router.route(location)[0][0], "context")
 
     def test_drops_every_unwhitelisted_tag(self):
         router = parsers.FeedRouter()
-        self.assertIsNone(router.route("<2026-08-08T02:43:46.205Z> [Notice] <OnDragInventoryItemModifyTarget> noise"))
+        self.assertEqual(
+            router.route("<2026-08-08T02:43:46.205Z> [Notice] <OnDragInventoryItemModifyTarget> noise"),
+            [],
+        )
 
     def test_survives_the_whole_fixture_without_raising(self):
         router = parsers.FeedRouter()
         counts = {"mission": 0, "notification": 0, "context": 0}
         with FIXTURE.open(encoding="utf-8", errors="replace") as fh:
             for record in parsers.iter_records(fh):
-                routed = router.route(record)
-                if routed:
-                    counts[routed[0]] += 1
+                for feed, _event in router.route(record):
+                    counts[feed] += 1
         self.assertGreater(counts["mission"], 0)
         self.assertGreater(counts["notification"], 0)
         self.assertGreater(counts["context"], 0)
@@ -311,15 +313,166 @@ class FeedRouterTests(unittest.TestCase):
         router = parsers.FeedRouter()
         with FIXTURE.open(encoding="utf-8", errors="replace") as fh:
             for record in parsers.iter_records(fh):
-                routed = router.route(record)
-                if routed:
-                    feed, event = routed
+                for feed, event in router.route(record):
                     # Check that event text (if present) does not contain noise markers
                     if "text" in event:
                         self.assertNotIn("SPAM", event["text"],
                             f"SPAM noise leaked into {feed} event text: {event['text'][:100]}")
                         self.assertNotIn("Radiation Heat", event["text"],
                             f"Radiation Heat noise leaked into {feed} event text: {event['text'][:100]}")
+
+
+# Verbatim from a real Build(12344265) session, 2026-08-13: accepting "A Call to
+# Arms". These four records are the whole of what the game logs for a mission on
+# this build -- note there is no <CMissionLogEntry::UpdateActiveObjective> among
+# them, which is the bug these tests pin.
+REAL_UPSERT = (
+    "<2026-08-13T02:08:39.857Z> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted "
+    "push message for: mission_id b092838d-bee5-4912-9b71-8812dc574628 - objective_id "
+    "074bd92d-4f6d-6c1c-b901-3b7496025eb8 - state MISSION_OBJECTIVE_STATE_INPROGRESS - "
+    "created 1 - flags=ShowInLog|RespectInheritedVisibility| [Team_GameServices][Missions]"
+)
+REAL_OBJECTIVE_NOTIFICATION = (
+    "<2026-08-13T02:08:39.861Z> [Notice] <SHUDEvent_OnNotification> Added notification "
+    '"New Objective: Locate CrimeStat rated criminals and neutralize any encountered. '
+    'Criminals part of paid contract work do not qualify.: " [68] to queue. New queue '
+    "size: 2, MissionId: [b092838d-bee5-4912-9b71-8812dc574628], ObjectiveId: "
+    "[074bd92d-4f6d-6c1c-b901-3b7496025eb8] [Team_CoreGameplayFeatures][Missions][Comms]"
+)
+REAL_TITLE_NOTIFICATION = (
+    "<2026-08-13T02:08:39.438Z> [Notice] <SHUDEvent_OnNotification> Added notification "
+    '"Contract Accepted:  A Call to Arms: " [67] to queue. New queue size: 1, MissionId: '
+    "[b092838d-bee5-4912-9b71-8812dc574628], ObjectiveId: [] "
+    "[Team_CoreGameplayFeatures][Missions][Comms]"
+)
+REAL_OBJECTIVE_TEXT = (
+    "Locate CrimeStat rated criminals and neutralize any encountered. "
+    "Criminals part of paid contract work do not qualify.: "
+)
+
+
+class ObjectiveIdFromNotificationTests(unittest.TestCase):
+    """Build(12344265): the notification's ObjectiveId is the only text source."""
+
+    def test_extracts_a_populated_objective_id(self):
+        event = parsers.parse_notification(REAL_OBJECTIVE_NOTIFICATION)
+        self.assertEqual(event["objectiveId"], "074bd92d-4f6d-6c1c-b901-3b7496025eb8")
+
+    def test_an_empty_objective_id_becomes_none(self):
+        """'ObjectiveId: []' means not objective-bound. None, not '', so callers
+        can test truthiness without special-casing the empty string."""
+        event = parsers.parse_notification(REAL_TITLE_NOTIFICATION)
+        self.assertIsNone(event["objectiveId"])
+
+    def test_a_notification_without_the_field_still_parses(self):
+        record = (
+            '<2026-08-08T02:44:59.361Z> [Notice] <SHUDEvent_OnNotification> Added notification '
+            '"No objective field here" [1] to queue. New queue size: 1, '
+            "MissionId: [11111111-1111-1111-1111-111111111111]"
+        )
+        event = parsers.parse_notification(record)
+        self.assertEqual(event["text"], "No objective field here")
+        self.assertIsNone(event["objectiveId"])
+
+    def test_strips_only_the_known_hud_prefix(self):
+        self.assertEqual(
+            parsers.strip_objective_prefix("New Objective: Kill things: "), "Kill things: "
+        )
+        self.assertEqual(parsers.strip_objective_prefix("Kill things: "), "Kill things: ")
+
+    def test_keeps_the_trailing_placeholder_colon(self):
+        """The ': ' is the game's stripped %ls. Documented as rendering
+        literally -- inventing a value it never logged would be worse."""
+        self.assertTrue(parsers.strip_objective_prefix("New Objective: X: ").endswith(": "))
+
+
+class RealBuildMissionFlowTests(unittest.TestCase):
+    """End-to-end on the exact records the game wrote, in the order it wrote them."""
+
+    def test_the_real_records_produce_a_visible_objective(self):
+        """The headline regression: before this, these two records produced
+        nothing at all and the Objectives list was permanently empty."""
+        router = parsers.FeedRouter()
+        self.assertEqual(router.route(REAL_UPSERT), [])  # text half not here yet
+        routed = router.route(REAL_OBJECTIVE_NOTIFICATION)
+        feeds = [feed for feed, _ in routed]
+        self.assertEqual(feeds, ["notification", "mission"])
+        mission = routed[1][1]
+        self.assertEqual(mission["missionId"], "b092838d-bee5-4912-9b71-8812dc574628")
+        self.assertEqual(mission["objectiveId"], "074bd92d-4f6d-6c1c-b901-3b7496025eb8")
+        self.assertEqual(mission["state"], "INPROGRESS")
+        self.assertEqual(mission["text"], REAL_OBJECTIVE_TEXT)
+        self.assertEqual(mission["textRaw"], REAL_OBJECTIVE_TEXT)
+        self.assertIn("ShowInLog", mission["flags"])
+
+    def test_the_notification_keeps_its_own_text_verbatim(self):
+        """Only the objective row is de-prefixed; the HUD notification is not."""
+        router = parsers.FeedRouter()
+        router.route(REAL_UPSERT)
+        routed = router.route(REAL_OBJECTIVE_NOTIFICATION)
+        notification = routed[0][1]
+        self.assertTrue(notification["text"].startswith("New Objective: "))
+
+    def test_the_notification_event_does_not_publish_the_objective_id(self):
+        """Smallest payload: objectiveId pairs the halves internally and is not
+        part of the notification wire event."""
+        router = parsers.FeedRouter()
+        notification = router.route(REAL_TITLE_NOTIFICATION)[0][1]
+        self.assertEqual(set(notification), {"text", "missionId"})
+
+    def test_a_title_notification_produces_no_mission_event(self):
+        """'Contract Accepted: …' has an empty ObjectiveId, so it is a
+        notification only -- it must not fabricate an objective."""
+        router = parsers.FeedRouter()
+        routed = router.route(REAL_TITLE_NOTIFICATION)
+        self.assertEqual([feed for feed, _ in routed], ["notification"])
+
+    def test_works_when_the_notification_arrives_before_the_upsert(self):
+        """Observed order is upsert-then-notification by 4ms, which is far too
+        close to rely on."""
+        router = parsers.FeedRouter()
+        routed = router.route(REAL_OBJECTIVE_NOTIFICATION)
+        self.assertEqual([feed for feed, _ in routed], ["notification"])
+        (feed, mission), = router.route(REAL_UPSERT)
+        self.assertEqual(feed, "mission")
+        self.assertEqual(mission["text"], REAL_OBJECTIVE_TEXT)
+
+    def test_a_later_state_change_reuses_the_remembered_text(self):
+        """A bare COMPLETED upsert arrives with no notification beside it.
+        Without the text cache it would fail the completeness check and never
+        emit -- the objective would appear to vanish on completion."""
+        router = parsers.FeedRouter()
+        router.route(REAL_UPSERT)
+        router.route(REAL_OBJECTIVE_NOTIFICATION)
+        completed = REAL_UPSERT.replace(
+            "MISSION_OBJECTIVE_STATE_INPROGRESS", "MISSION_OBJECTIVE_STATE_COMPLETED"
+        ).replace("created 1", "created 0")
+        (feed, mission), = router.route(completed)
+        self.assertEqual(feed, "mission")
+        self.assertEqual(mission["state"], "COMPLETED")
+        self.assertEqual(mission["text"], REAL_OBJECTIVE_TEXT)
+
+    def test_a_hidden_objective_is_still_suppressed_via_the_notification_path(self):
+        """§10's HiddenInUI box: the notification contributes no flags, so
+        visibility must still be decided by the upsert alone."""
+        router = parsers.FeedRouter()
+        hidden = REAL_UPSERT.replace("flags=ShowInLog|", "flags=Hidden|")
+        router.route(hidden)
+        routed = router.route(REAL_OBJECTIVE_NOTIFICATION)
+        self.assertEqual([feed for feed, _ in routed], ["notification"])
+
+    def test_a_notification_alone_never_creates_an_objective(self):
+        """No upsert means no state and no flags, so nothing may be emitted --
+        a notification must not be able to conjure a visible objective."""
+        router = parsers.FeedRouter()
+        routed = router.route(REAL_OBJECTIVE_NOTIFICATION)
+        self.assertEqual([feed for feed, _ in routed], ["notification"])
+
+    def test_the_text_cache_is_bounded(self):
+        table = parsers.ObjectiveTable()
+        for i in range(parsers._PARTIAL_CAP + 50):
+            table.ingest_notification_text(f"objective-{i}", f"text {i}")
+        self.assertLessEqual(len(table._texts), parsers._PARTIAL_CAP)
 
 
 if __name__ == "__main__":
