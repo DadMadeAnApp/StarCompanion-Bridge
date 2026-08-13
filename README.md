@@ -101,9 +101,17 @@ out by its own stale sockets.
 ## Live telemetry
 
 The bridge can tail Star Citizen's `Game.log` and forward three feeds to the app: mission
-objectives, HUD notifications, and location context. **This has not yet been verified against
-a running game** — it's built and unit-tested against captured log fixtures, but nobody has
-confirmed the frames it produces match what a live session actually logs.
+objectives, HUD notifications, and location context.
+
+**Verified against a running game on 2026-08-13** (Build 12344265 / SC 4.9.188): notifications
+and location context match what a live session logs, and reach the app. **Mission objectives
+are unreliable — through no fault of the bridge.** The game logs an objective's state and its
+text on separate lines, and emits each of them only sometimes: across three missions in one
+session, two accepted contracts produced one state record between them. The bridge forwards
+what it can (it pairs the text from the HUD notification carrying a matching `ObjectiveId`,
+which is the most consistent of the three sources), but a *complete* objective list cannot be
+built from this log, and player-visible objectives are never observed reaching `COMPLETED`.
+The app therefore shows notifications and does not render an objectives list.
 
 **Opt-in per connection**: the bridge reads nothing and sends nothing until an app
 subscribes. A connection that never sends a `subscribe` message gets no telemetry traffic at
@@ -118,16 +126,25 @@ uploaded anywhere — the three feeds go only to the app connected over your loc
 **Privacy**: the account id and character GEID are stripped before a frame ever leaves the
 machine. If you ever see either value in a frame, that's a bug — please report it.
 
-**Non-default install path**: the bridge auto-detects the default Star Citizen install
-location. If yours lives somewhere else, point it at the log directly:
+**Non-default install path**: the bridge finds installs outside `C:\Program Files` on its own,
+in three steps — the historical default paths, then the RSI launcher's own log
+(`%APPDATA%\rsilauncher\logs\log.log`, which records where it installed the game), then
+conventional folder names on every drive. Installs on `D:`/`E:`/`F:` are found without any
+configuration. It is a bounded set of exact paths, never a recursive scan of your drives.
+
+If it still can't find yours — an unusual folder name *and* no launcher log — point it at the
+log directly:
 
 ```
 python bridge_server.py --log "F:\Robert Space Industries\StarCitizen\LIVE\Game.log"
 ```
 
-Note the folder is **"Robert Space Industries"**, not "Roberts" — an easy typo. Passing
-`--log` with a path that doesn't exist fails immediately at startup with an error, rather than
-silently falling back to auto-detection.
+Note the folder may be **"Robert Space Industries"** or "Roberts" — real installs carry both
+spellings, and auto-detection tries each. Passing `--log` with a path that doesn't exist fails
+immediately at startup with an error, rather than silently falling back to auto-detection.
+
+When no log can be found, a `subscribe` is answered with `ok:false` / `"log not found"`, which
+the app surfaces as its own distinct state rather than an empty list.
 
 ---
 
