@@ -55,6 +55,9 @@ def _install_pynput_stub():
         """Stand-in for a pynput.keyboard.Key enum member."""
         def __init__(self, name):
             self._name = name
+            # Real pynput Buttons are enum members, so the mouse branch's
+            # log lines read `button.name`.
+            self.name = name
 
         def __repr__(self):
             return f"Key.{self._name}"
@@ -101,8 +104,19 @@ def _install_pynput_stub():
         middle = _KeySentinel("middle")
 
     class MouseController:
-        def click(self, *a, **k):
-            pass
+        def __init__(self):
+            # Recorded so a test can prove a held click actually pressed and
+            # released the same button, in that order.
+            self.events = []
+
+        def click(self, button, *a, **k):
+            self.events.append(("click", button))
+
+        def press(self, button, *a, **k):
+            self.events.append(("press", button))
+
+        def release(self, button, *a, **k):
+            self.events.append(("release", button))
 
         def scroll(self, *a, **k):
             pass
@@ -175,7 +189,9 @@ class NumpadKeyResolutionTests(unittest.TestCase):
 
 # ── Telemetry: subscribe/unsubscribe interception, the pump, and feed_task ──
 import asyncio
+import contextlib
 import json
+import time
 import tempfile
 from pathlib import Path
 from unittest import mock
@@ -516,6 +532,75 @@ class TelemetryHandlerTests(unittest.TestCase):
         self.assertLess(len(seqs), 30)  # the rate cap must have dropped some
         gaps = [b - a for a, b in zip(seqs, seqs[1:])]
         self.assertTrue(any(gap > 1 for gap in gaps), "expected a seq gap from a dropped frame")
+
+
+class MouseHoldTests(unittest.TestCase):
+    """A held left click is Star Citizen's quantum jump, so `click` with a
+    `hold` must be a press/sleep/release, not a tap."""
+
+    def setUp(self):
+        self.mouse = bridge_server._mouse
+        self.mouse.events.clear()
+
+    def _dispatch(self, msg):
+        return asyncio.new_event_loop().run_until_complete(bridge_server._dispatch(msg))
+
+    def test_click_with_hold_presses_and_releases_the_same_button(self):
+        ok, err = self._dispatch({"type": "mouse", "action": "click", "hold": 0.05})
+        self.assertTrue(ok)
+        self.assertIsNone(err)
+        self.assertEqual(
+            self.mouse.events,
+            [("press", bridge_server.Button.left), ("release", bridge_server.Button.left)],
+        )
+
+    def test_click_without_hold_is_still_a_tap(self):
+        ok, _err = self._dispatch({"type": "mouse", "action": "click"})
+        self.assertTrue(ok)
+        self.assertEqual(self.mouse.events, [("click", bridge_server.Button.left)])
+
+    def test_hold_actually_waits(self):
+        started = time.monotonic()
+        self._dispatch({"type": "mouse", "action": "click", "hold": 0.3})
+        self.assertGreaterEqual(time.monotonic() - started, 0.25)
+
+    def test_hold_is_clamped_to_the_maximum(self):
+        # Shares _coerce_hold with the keyboard path, so a client asking for a
+        # minute cannot pin the mouse button down for one.
+        with mock.patch.object(bridge_server, "MAX_HOLD_SECONDS", 0.05):
+            started = time.monotonic()
+            self._dispatch({"type": "mouse", "action": "click", "hold": 60})
+        self.assertLess(time.monotonic() - started, 5)
+
+    def test_zero_hold_degrades_to_a_tap(self):
+        # _coerce_hold returns None for <= 0, so the tap branch takes it and the
+        # button is never left in a pressed-only state.
+        self._dispatch({"type": "mouse", "action": "click", "hold": 0})
+        self.assertEqual(self.mouse.events, [("click", bridge_server.Button.left)])
+
+    def test_button_is_released_even_if_the_hold_is_cancelled(self):
+        """A dropped connection mid-hold must never leave a button stuck down."""
+        async def scenario():
+            task = asyncio.ensure_future(
+                bridge_server._dispatch({"type": "mouse", "action": "click", "hold": 5})
+            )
+            await asyncio.sleep(0.05)
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
+
+        asyncio.new_event_loop().run_until_complete(scenario())
+        self.assertEqual(
+            self.mouse.events,
+            [("press", bridge_server.Button.left), ("release", bridge_server.Button.left)],
+        )
+
+    def test_hold_honours_the_button_field(self):
+        self._dispatch({"type": "mouse", "action": "click", "button": "right", "hold": 0.05})
+        self.assertEqual(
+            self.mouse.events,
+            [("press", bridge_server.Button.right), ("release", bridge_server.Button.right)],
+        )
 
 
 if __name__ == "__main__":

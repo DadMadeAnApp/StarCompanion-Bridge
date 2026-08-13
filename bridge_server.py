@@ -580,8 +580,22 @@ async def _dispatch(msg: dict) -> tuple[bool, str | None]:
         except (TypeError, ValueError):
             amount = 1
 
+        hold_secs = _coerce_hold(msg.get("hold")) if msg.get("hold") is not None else None
+
         async with _input_lock:
-            if action == "click":
+            if action == "click" and hold_secs is not None:
+                # Star Citizen's quantum jump is a held left click, so a click
+                # with a duration is a distinct gesture from a tap, not a slow
+                # one. Release runs on cancellation too — a dropped connection
+                # mid-hold must never leave a mouse button physically stuck down.
+                try:
+                    _mouse.press(button)
+                    await asyncio.sleep(hold_secs)
+                finally:
+                    with contextlib.suppress(Exception):
+                        _mouse.release(button)
+                logging.info(f"MOUSE {button.name} hold ({hold_secs}s)")
+            elif action == "click":
                 _mouse.click(button)
                 logging.info(f"MOUSE {button.name} click")
             elif action == "alt_click":

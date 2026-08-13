@@ -216,6 +216,14 @@ you can correlate replies to requests.
 | `action` | `click`, `alt_click`, `scroll_up`, `scroll_down` | Required. |
 | `button` | `left` (default), `right`, `middle` | New — the old bridge was left-only. |
 | `amount` | 1–10, default 1 | Scroll only. Clamped. |
+| `hold` | seconds, clamped to 10 | `click` only. Press-and-hold, not a slow tap. |
+
+A `click` carrying `hold` presses the button, waits, then releases it — Star
+Citizen's quantum jump is a held left click, which a tap cannot express. The
+release runs on cancellation too, so a connection dropped mid-hold never leaves
+a button stuck down. `hold` <= 0 degrades to a plain tap, and the clamp is the
+same `MAX_HOLD_SECONDS` the keyboard path uses. `alt_click` and the scroll
+actions ignore `hold`.
 
 ### Ping
 
