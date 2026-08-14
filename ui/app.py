@@ -259,12 +259,35 @@ class BridgeApp:
             try:
                 self._handle(event)
             except Exception as exc:  # noqa: BLE001 - isolate, don't propagate
-                logging.error(f"Failed to handle {event!r}: {exc}")
-                with contextlib.suppress(Exception):
-                    self.activity.note(f"… failed to handle an event: {exc}")
+                self._report_handler_failure(event, exc)
         if dropped:
             plural = "event" if dropped == 1 else "events"
             self.activity.note(f"… {dropped} {plural} dropped")
+
+    def _report_handler_failure(self, event, exc: Exception) -> None:
+        """Log/note that an event's handling raised, without ever repeating
+        the event's own contents.
+
+        The event's repr is off-limits outright: Ready is a frozen dataclass
+        whose generated repr includes the raw pairing token, and its
+        pairing_uri field embeds the token again. The exception's *message*
+        needs its own check, because Ready is also the one event type whose
+        handling touches attacker- and format-sensitive data on the way to
+        the screen (the QR encoder in particular) -- a ValueError from a
+        string/encoding failure can echo the offending value back in
+        str(exc), the same way `int("xyz")` echoes "xyz". So for Ready
+        specifically, withhold the exception text too and log only the type;
+        every other event type carries nothing sensitive and keeps the
+        message for diagnosis.
+        """
+        kind = type(event).__name__
+        if isinstance(event, Ready):
+            detail = "message withheld -- Ready may carry the pairing token"
+        else:
+            detail = str(exc)
+        logging.error(f"Failed to handle a {kind} event: {detail}")
+        with contextlib.suppress(Exception):
+            self.activity.note(f"… failed to handle a {kind} event: {detail}")
 
     def _handle(self, event) -> None:
         self.status.apply(event)

@@ -244,6 +244,35 @@ def test_a_failing_event_handler_is_isolated_and_does_not_stop_the_batch(app, mo
     assert any("failed to handle" in line for line in app.activity.lines)
 
 
+def test_a_failing_ready_handler_never_leaks_the_token_to_log_or_activity(app, monkeypatch, caplog):
+    """Regression for the finding against the fault-isolation fix: a handler
+    exception while processing Ready must not put the pairing token in
+    bridge.log (which the README tells users to attach to bug reports) or
+    in the on-screen activity pane."""
+    sentinel_token = "SENTINEL-TOKEN-DO-NOT-LEAK-13a9f2"
+    real_handle = app._handle
+
+    def flaky_handle(event):
+        if isinstance(event, Ready):
+            raise RuntimeError(f"boom while handling token {sentinel_token}")
+        real_handle(event)
+
+    monkeypatch.setattr(app, "_handle", flaky_handle)
+    caplog.set_level(logging.ERROR)
+
+    app.bus.emit(Ready(ips=("192.168.1.42",), port=8765, token=sentinel_token,
+                       cert_fp="A1:B2:C3",
+                       pairing_uri=f"starcompanion://pair?t={sentinel_token}"))
+    app.drain_once()
+
+    for record in caplog.records:
+        assert sentinel_token not in record.getMessage()
+    for line in app.activity.lines:
+        assert sentinel_token not in line
+    # The failure must still be visible, just without the secret in it.
+    assert any("failed to handle" in line for line in app.activity.lines)
+
+
 def test_the_drain_loop_reschedules_itself_even_if_a_tick_raises(app, monkeypatch):
     scheduled = []
     monkeypatch.setattr(app.root, "after",
