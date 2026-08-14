@@ -115,8 +115,16 @@ def _quarantine(path: Path) -> str:
     return f"{CONFIG_NAME} was unreadable — moved to {bad.name} and using defaults."
 
 
-def save(cfg: Config, app_dir: Path) -> None:
-    """Write the config, preserving any keys this version does not know about."""
+def save(cfg: Config, app_dir: Path) -> bool:
+    """Write the config, preserving any keys this version does not know about.
+
+    Returns False (rather than raising) if the file could not be written --
+    e.g. `app_dir` is `C:\\Program Files` and the process is a standard user.
+    Callers decide how to surface that; a caller in a WM_DELETE_WINDOW handler
+    or a Tk button callback that let this raise would have the exception
+    swallowed by Tk into a stream that's None in a --windowed build, which
+    looks like nothing happened at all.
+    """
     payload = dict(cfg.extras)
     payload.update({
         "version": CONFIG_VERSION,
@@ -131,8 +139,12 @@ def save(cfg: Config, app_dir: Path) -> None:
     # Write via a temp file so an interrupted save can't leave a truncated
     # config that the next launch has to quarantine.
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    tmp.replace(path)
+    try:
+        tmp.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        tmp.replace(path)
+    except OSError:
+        return False
+    return True
 
 
 def apply_cli(cfg: Config, cli_port: int | None, cli_log: str | None) -> Config:

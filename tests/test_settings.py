@@ -97,6 +97,25 @@ def test_the_dialog_returns_the_edited_config(tk_root, tmp_path):
     assert saved[0].telemetry_enabled is False
 
 
+def test_the_save_button_label_reflects_a_telemetry_only_change(tk_root, tmp_path):
+    from ui.settings import SettingsDialog
+
+    dialog = SettingsDialog(tk_root, Config(port=8765, telemetry_enabled=True), tmp_path,
+                             on_save=lambda c: None)
+    assert dialog.save_button.cget("text") == "Save"
+    dialog.telemetry_var.set(False)
+    assert dialog.save_button.cget("text") == "Save & Restart"
+
+
+def test_a_failed_save_reports_an_error_instead_of_closing_silently(tk_root, tmp_path):
+    from ui.settings import SettingsDialog
+
+    dialog = SettingsDialog(tk_root, Config(port=8765), tmp_path, on_save=lambda c: False)
+    dialog.port_var.set("9100")
+    assert dialog.save() is False
+    assert "Could not save" in dialog.error_label.cget("text")
+
+
 def test_the_dialog_refuses_to_save_an_invalid_port(tk_root, tmp_path):
     from ui.settings import SettingsDialog
 

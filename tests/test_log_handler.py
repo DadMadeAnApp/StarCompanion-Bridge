@@ -1,4 +1,9 @@
 import logging
+import logging.handlers
+import os
+import sys
+
+import pytest
 
 from core.events import EventBus, LogLine
 from ui.log_handler import GuiLogHandler, color_for_level, configure_logging
@@ -94,6 +99,31 @@ def test_console_mode_installs_a_stream_handler_and_no_gui_handler(tmp_path):
         assert any(isinstance(h, logging.StreamHandler) for h in root.handlers)
         assert not any(isinstance(h, GuiLogHandler) for h in root.handlers)
     finally:
+        root.handlers[:] = saved
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="chmod-based perms don't apply on Windows")
+@pytest.mark.skipif(hasattr(os, "geteuid") and os.geteuid() == 0,
+                     reason="root ignores directory permissions")
+def test_an_unwritable_app_dir_does_not_stop_the_window_only_logging(tmp_path):
+    # An install under C:\Program Files is unwritable by a standard user.
+    # RotatingFileHandler's constructor raises PermissionError in that case;
+    # startup must continue with the pane-only GuiLogHandler already
+    # installed rather than crashing before BridgeApp exists.
+    root = logging.getLogger()
+    saved = root.handlers[:]
+    tmp_path.chmod(0o500)
+    try:
+        configure_logging(EventBus(), log_file=tmp_path / "bridge.log")
+        assert any(isinstance(h, GuiLogHandler) for h in root.handlers)
+        assert not any(isinstance(h, logging.handlers.RotatingFileHandler)
+                        for h in root.handlers)
+        logging.warning("this must not raise even though the file can't be opened")
+    finally:
+        tmp_path.chmod(0o700)
+        for handler in root.handlers:
+            if handler not in saved:
+                handler.close()
         root.handlers[:] = saved
 
 

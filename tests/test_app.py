@@ -141,6 +141,32 @@ def test_retry_clears_the_failure_and_restarts(app, monkeypatch):
     assert restarts == [1]
 
 
+def test_restart_starts_no_second_thread_when_the_old_one_wont_stop(app, monkeypatch):
+    # If the old ServerThread doesn't unwind in time (e.g. a tailer blocked on
+    # a file the game has locked), starting a replacement would leave two
+    # threads fighting over the same port -- the new one dies with
+    # EADDRINUSE while the old one keeps running and emitting to the bus.
+    starts = []
+    monkeypatch.setattr(app, "start_server", lambda: starts.append(1))
+    monkeypatch.setattr(app, "stop_server", lambda timeout=3.0: False)
+    app.restart()
+    assert starts == []
+    assert app.failure_visible is True
+    assert "hasn't released the port" in app.failure_label.cget("text")
+
+
+def test_retry_stops_the_old_server_first_and_wont_double_start(app, monkeypatch):
+    starts = []
+    monkeypatch.setattr(app, "start_server", lambda: starts.append(1))
+    monkeypatch.setattr(app, "stop_server", lambda timeout=3.0: False)
+    app.bus.emit(Fatal(kind=FATAL_CRASH, message="boom"))
+    app.drain_once()
+    app.retry()
+    assert starts == []
+    assert app.failure_visible is True
+    assert "hasn't released the port" in app.failure_label.cget("text")
+
+
 def test_restart_keeps_the_token_and_clears_the_card(app, monkeypatch):
     monkeypatch.setattr(app, "start_server", lambda: None)
     monkeypatch.setattr(app, "stop_server", lambda timeout=3.0: True)
@@ -151,7 +177,11 @@ def test_restart_keeps_the_token_and_clears_the_card(app, monkeypatch):
     assert app.status.status == "STARTING"
 
 
-def test_apply_settings_persists_and_restarts_only_when_the_port_changed(app, monkeypatch):
+def test_apply_settings_persists_and_restarts_on_port_or_telemetry_change(app, monkeypatch):
+    # A telemetry toggle needs the same restart as a port change: each
+    # connection builds its own LogTailer at accept time, so a currently
+    # connected phone keeps its old feed state until the listener itself is
+    # replaced -- there is no way to apply this one live.
     restarts = []
     monkeypatch.setattr(app, "restart", lambda: restarts.append(1))
     changed = Config(port=9100, telemetry_enabled=False)
@@ -165,7 +195,11 @@ def test_apply_settings_persists_and_restarts_only_when_the_port_changed(app, mo
 
     restarts.clear()
     app.apply_settings(Config(port=9100, telemetry_enabled=True))
-    assert restarts == []  # telemetry applies live, no restart needed
+    assert restarts == [1]  # telemetry-only change still restarts
+
+    restarts.clear()
+    app.apply_settings(Config(port=9100, telemetry_enabled=True))
+    assert restarts == []  # no change at all: no restart
 
 
 def test_server_thread_reports_port_in_use_as_a_fatal_event(tmp_path, monkeypatch):
@@ -291,3 +325,32 @@ def test_the_drain_loop_reschedules_itself_even_if_a_tick_raises(app, monkeypatc
 
     assert scheduled[0][0] == DRAIN_INTERVAL_MS
     assert scheduled[0][1] == app._tick
+
+
+def test_on_close_destroys_the_window_even_if_save_fails(app, monkeypatch):
+    # An unwritable app_dir (e.g. an install under C:\Program Files) makes
+    # save() raise/return False. Tk's WM_DELETE_WINDOW dispatcher swallows an
+    # exception raised here to a stream that's None in a --windowed build,
+    # which would silently skip destroy() -- leaving the window (and the
+    # daemon server thread still holding the port) stuck open with no way to
+    # close it. destroy() must run regardless. (Spy on destroy rather than
+    # really destroying `app.root` -- the tk_root fixture destroys it again
+    # on teardown, and a real double-destroy raises TclError.)
+    def boom_save(cfg, app_dir):
+        raise OSError("read-only file system")
+
+    monkeypatch.setattr("ui.app.save", boom_save)
+    monkeypatch.setattr(app, "stop_server", lambda timeout=3.0: True)
+    destroyed = []
+    monkeypatch.setattr(app.root, "destroy", lambda: destroyed.append(1))
+    app.on_close()
+    assert destroyed == [1]
+
+
+def test_on_close_destroys_the_window_even_if_the_server_wont_stop(app, monkeypatch):
+    monkeypatch.setattr("ui.app.save", lambda cfg, app_dir: True)
+    monkeypatch.setattr(app, "stop_server", lambda timeout=3.0: False)
+    destroyed = []
+    monkeypatch.setattr(app.root, "destroy", lambda: destroyed.append(1))
+    app.on_close()
+    assert destroyed == [1]

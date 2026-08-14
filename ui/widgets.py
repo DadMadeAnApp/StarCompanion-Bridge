@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import deque
 
 from ui.log_handler import color_for_level
-from ui.theme import ACCENT, BG, DOT_IDLE, FONT_MONO, FONT_UI, MUTED, PANEL, TEXT
+from ui.theme import BG, DOT_IDLE, FONT_MONO, FONT_UI, MUTED, PANEL, TEXT
 
 # Import tkinter lazily for when it's actually needed; this allows the module
 # to be imported without a display so mask() can be tested.

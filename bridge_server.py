@@ -92,6 +92,11 @@ def set_telemetry_enabled(enabled: bool) -> None:
     _telemetry_enabled = bool(enabled)
 
 
+def set_log_path_override(path: Path | None) -> None:
+    global _log_path_override
+    _log_path_override = path
+
+
 def telemetry_enabled() -> bool:
     return _telemetry_enabled
 
@@ -989,6 +994,10 @@ def console_banner(info: dict) -> None:
         for ip in ips:
             print(f"      {ip}")
     print(f"  Port: {info['port']}")
+    # SECURITY: print, not logging -- the pairing token must never reach
+    # bridge.log, which the README tells users to attach to bug reports.
+    # Converting this to logging for consistency with the cert-setup notices
+    # above would silently leak it into that file.
     print(f"  Pairing token: {info['token']}")
     print(f"  Cert SHA-256: {info['cert_fp']}")
     print("=" * 60)
@@ -1003,6 +1012,22 @@ def console_banner(info: dict) -> None:
         print(f"  Pairing link: {info['pairing_uri']}")
     print()
     logging.info("Waiting for app to connect... (Star Citizen must be the active window)")
+
+
+class StartupRefusal(Exception):
+    """A pre-window condition that must stop startup (bad --log path, a
+    retired insecure-auth opt-out still present).
+
+    Carries the user-facing message so `start()` can present it either way:
+    printed to the console, or handed to `run_gui` so the window opens
+    straight into its failure row instead of vanishing with nothing on
+    screen (the whole point of this branch, under a --windowed build where
+    stdout/stderr are None and print() is a silent no-op).
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
 
 
 def fatal_kind_for(exc: BaseException) -> str:
@@ -1051,50 +1076,69 @@ def _parse_options() -> argparse.Namespace:
     )
     # Ignore unrecognised args rather than exiting — a stray argument from a
     # shortcut or file association shouldn't stop the bridge from starting.
+    # This runs before any window (console or GUI) exists, and under a
+    # --windowed build sys.stdout is None, which makes a bare print() here a
+    # silent no-op. So the warning is carried on `args` and printed/logged by
+    # `start()` once it knows which mode owns the output.
     args, unknown = parser.parse_known_args()
-    if unknown:
-        print(f"[warn] ignoring unrecognised argument(s): {' '.join(unknown)}")
+    args.unrecognized_warning = (
+        f"ignoring unrecognised argument(s): {' '.join(unknown)}" if unknown else None
+    )
+
+    # `args.refusal`, when set, is a StartupRefusal that `start()` must present
+    # instead of doing anything else -- these checks stop at the first one
+    # found rather than raising immediately, so `args` (in particular
+    # `args.console`) is always fully populated for the caller to act on.
+    args.refusal = None
 
     global _log_path_override
     if args.log_path is not None:
         candidate = Path(args.log_path)
         if not candidate.exists():
-            _refuse_bad_log_path(candidate)
-        _log_path_override = candidate
+            args.refusal = _bad_log_path_refusal(candidate)
+        else:
+            _log_path_override = candidate
 
     # Loudly reject the retired opt-outs rather than ignoring them: someone
     # using one believes the bridge is unauthenticated, and silently starting
     # with a token would look like the bridge is broken.
-    sentinel = _app_dir() / "INSECURE_NO_AUTH"
-    if args.insecure_no_auth:
-        _refuse_no_auth("--insecure-no-auth is no longer supported.")
-    if os.environ.get("STARCOMPANION_INSECURE_NO_AUTH", "").strip() not in ("", "0"):
-        _refuse_no_auth("STARCOMPANION_INSECURE_NO_AUTH is no longer supported.")
-    if sentinel.exists():
-        _refuse_no_auth(f"The INSECURE_NO_AUTH file is no longer supported.\nDelete it: {sentinel}")
+    if args.refusal is None:
+        sentinel = _app_dir() / "INSECURE_NO_AUTH"
+        if args.insecure_no_auth:
+            args.refusal = _no_auth_refusal("--insecure-no-auth is no longer supported.")
+        elif os.environ.get("STARCOMPANION_INSECURE_NO_AUTH", "").strip() not in ("", "0"):
+            args.refusal = _no_auth_refusal("STARCOMPANION_INSECURE_NO_AUTH is no longer supported.")
+        elif sentinel.exists():
+            args.refusal = _no_auth_refusal(
+                f"The INSECURE_NO_AUTH file is no longer supported.\nDelete it: {sentinel}"
+            )
 
     return args
 
 
+def _bad_log_path_refusal(candidate: Path) -> StartupRefusal:
+    return StartupRefusal(
+        f"--log path does not exist: {candidate}\n"
+        "Not falling back to auto-detection — check the path and try again."
+    )
+
+
+def _no_auth_refusal(detail: str) -> StartupRefusal:
+    return StartupRefusal(
+        f"{detail}\n"
+        "The pairing token is always required. Scan the QR in the startup\n"
+        "banner to pair without typing it."
+    )
+
+
 def _refuse_bad_log_path(candidate: Path) -> None:
-    print(f"\nERROR: --log path does not exist: {candidate}")
-    print("Not falling back to auto-detection — check the path and try again.")
-    # The pause is for a double-clicked window; suppress EOFError so a piped
-    # or headless run exits cleanly instead of dumping a traceback.
-    with contextlib.suppress(EOFError):
-        input("\nPress Enter to close...")
-    sys.exit(1)
+    """Kept for anything still calling it directly; raises rather than exiting."""
+    raise _bad_log_path_refusal(candidate)
 
 
 def _refuse_no_auth(detail: str) -> None:
-    print(f"\nERROR: {detail}")
-    print("The pairing token is always required. Scan the QR in the startup")
-    print("banner to pair without typing it.")
-    # The pause is for a double-clicked window; suppress EOFError so a piped
-    # or headless run exits cleanly instead of dumping a traceback.
-    with contextlib.suppress(EOFError):
-        input("\nPress Enter to close...")
-    sys.exit(1)
+    """Kept for anything still calling it directly; raises rather than exiting."""
+    raise _no_auth_refusal(detail)
 
 
 def run_console(port: int) -> None:
@@ -1121,6 +1165,24 @@ def start() -> None:
     args = _parse_options()
     app_dir = _app_dir()
 
+    if args.refusal is not None:
+        if args.console:
+            # Unchanged from before this refactor: print, then pause for a
+            # double-clicked window. Suppress EOFError so a piped or headless
+            # run exits cleanly instead of dumping a traceback.
+            print(f"\nERROR: {args.refusal.message}")
+            with contextlib.suppress(EOFError):
+                input("\nPress Enter to close...")
+            sys.exit(1)
+
+        # GUI mode: no config to load, nothing to serve -- just open the
+        # window straight into its failure row with the reason, and don't
+        # offer Retry (the same argument would just fail again).
+        from ui.app import run_gui
+
+        run_gui(None, app_dir, startup_refusal=args.refusal.message)
+        return
+
     # Imported here, not at module scope: console mode must keep working even if
     # core/ and ui/ are missing, and a --windowed build should not pay for Tk
     # until it needs it.
@@ -1130,6 +1192,8 @@ def start() -> None:
     cfg = apply_cli(cfg, cli_port=args.port, cli_log=args.log_path)
 
     if args.console:
+        if args.unrecognized_warning:
+            print(f"[warn] {args.unrecognized_warning}")
         if warning:
             print(f"[warn] {warning}")
         run_console(cfg.port)
@@ -1137,7 +1201,7 @@ def start() -> None:
 
     from ui.app import run_gui
 
-    run_gui(cfg, app_dir, config_warning=warning)
+    run_gui(cfg, app_dir, config_warning=warning, startup_warning=args.unrecognized_warning)
 
 
 if __name__ == "__main__":

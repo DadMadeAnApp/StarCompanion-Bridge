@@ -39,6 +39,7 @@ from core.events import (
 from core.status import PORT_IN_USE, StatusModel
 from ui.log_handler import configure_logging
 from ui.theme import (
+    ERROR,
     MUTED,
     OK,
     WARN,
@@ -136,7 +137,6 @@ class BridgeApp:
         self.qr_payload = ""
 
         self.root = root if root is not None else tk.Tk()
-        enable_dpi_awareness()
         self.root.title("StarCompanion Bridge")
         self.root.minsize(WINDOW_WIDTH, MIN_HEIGHT)
         self.root.geometry(f"{WINDOW_WIDTH}x{max(cfg.window_height, MIN_HEIGHT)}")
@@ -205,7 +205,10 @@ class BridgeApp:
         self.port_row.grid(row=2, column=0, sticky="ew", pady=2)
         self.token_row = CopyRow(rows, "Token", masked=True)
         self.token_row.grid(row=3, column=0, sticky="ew", pady=2)
-        self.cert_row = CopyRow(rows, "Cert")
+        # masked: the 95-char colon-hex SHA-256 clips silently in this ~330px
+        # column with no sign it's truncated. First4/last4 is all a human eye
+        # comparison achieves anyway; Copy still yields the full string.
+        self.cert_row = CopyRow(rows, "Cert", masked=True)
         self.cert_row.grid(row=4, column=0, sticky="ew", pady=2)
 
         self.qr_hint = ttk.Label(card, text="Scan in the StarCompanion app to pair",
@@ -281,6 +284,11 @@ class BridgeApp:
         message for diagnosis.
         """
         kind = type(event).__name__
+        # SECURITY: withhold the exception text for Ready specifically -- it's
+        # the one event type whose handling touches attacker- and format-
+        # sensitive data (the pairing token, the QR encoder) on the way to the
+        # screen. A future event type carrying its own secret needs the same
+        # treatment; don't assume this branch is Ready-specific trivia.
         if isinstance(event, Ready):
             detail = "message withheld -- Ready may carry the pairing token"
         else:
@@ -310,7 +318,7 @@ class BridgeApp:
         self._refresh_status()
 
     def _refresh_status(self) -> None:
-        self.header_label.configure(text=self.status.text)
+        self.header_label.configure(text=self.status.header_text)
         self.dot.set(self.status.color)
 
     # ── Pair card ─────────────────────────────────────────────────────────────
@@ -396,19 +404,57 @@ class BridgeApp:
         self.failure_visible = False
         self.settings_shortcut_visible = False
 
+    def show_startup_refusal(self, message: str) -> None:
+        """A pre-window condition (a --log path that doesn't exist, a retired
+        insecure-auth opt-out still present) that stopped the bridge before it
+        ever tried to serve. No server was started, so there is nothing for
+        Retry to retry -- the same argument would just fail the same way --
+        so it's omitted rather than offered as a dead end.
+        """
+        self.header_label.configure(text="Startup blocked")
+        self.dot.set(ERROR)
+        self.failure_label.configure(text=message)
+        self.failure.grid(row=1, column=0, sticky="ew")
+        self.failure_visible = True
+        self.retry_button.grid_remove()
+        # A bad --log path or a retired flag is supplied on the command line,
+        # which the settings panel can't override (those fields show as
+        # CLI-controlled and disabled), so the shortcut would be a dead end
+        # here too.
+        self.settings_shortcut.grid_remove()
+        self.settings_shortcut_visible = False
+
     def retry(self) -> None:
+        # Don't assume the old thread is dead -- a Fatal from a crash means it
+        # is, but nothing guarantees that in general, and starting a second
+        # ServerThread while the first still holds the port just produces a
+        # second, identical failure that Retry then loops on forever.
+        if not self.stop_server():
+            self._show_stop_failure()
+            return
         self.status.reset()
         self._hide_failure()
         self._refresh_status()
         self.start_server()
 
+    def _show_stop_failure(self) -> None:
+        """The previous ServerThread didn't unwind in time (e.g. a tailer
+        blocked on a file the game has locked). Starting a replacement here
+        would leave two threads holding/fighting for the same port, so we
+        don't -- just say so and let Retry try again."""
+        self.failure_label.configure(
+            text="The previous listener hasn't released the port yet — try Retry again in a moment."
+        )
+        self.failure.grid(row=1, column=0, sticky="ew")
+        self.failure_visible = True
+        self.retry_button.grid()
+        self.settings_shortcut.grid_remove()
+        self.settings_shortcut_visible = False
+
     # ── Lifecycle ─────────────────────────────────────────────────────────────
     def start_server(self) -> None:
         bridge_server.set_telemetry_enabled(self.cfg.telemetry_enabled)
-        if self.cfg.log_path:
-            bridge_server._log_path_override = Path(self.cfg.log_path)
-        else:
-            bridge_server._log_path_override = None
+        bridge_server.set_log_path_override(Path(self.cfg.log_path) if self.cfg.log_path else None)
         self.server = ServerThread(port=self.cfg.port, bus=self.bus)
         self.server.start()
 
@@ -416,11 +462,19 @@ class BridgeApp:
         if self.server is None:
             return True
         stopped = self.server.stop(timeout=timeout)
-        self.server = None
+        if stopped:
+            self.server = None
+        # else: leave self.server pointing at the still-running thread. It
+        # still holds the port and its handlers are still live; clearing the
+        # reference here would make a caller believe it's safe to start a
+        # replacement, which is exactly the two-servers-on-one-port bug this
+        # guards against.
         return stopped
 
     def restart(self) -> None:
-        self.stop_server()
+        if not self.stop_server():
+            self._show_stop_failure()
+            return
         self.status.reset()
         self._hide_failure()
         for row in (self.ip_row, self.port_row, self.token_row, self.cert_row):
@@ -435,17 +489,26 @@ class BridgeApp:
         self._refresh_status()
         self.start_server()
 
-    def apply_settings(self, new_cfg: Config) -> None:
-        """Persist the panel's result and apply as much of it as we can live."""
+    def apply_settings(self, new_cfg: Config) -> bool:
+        """Persist the panel's result and apply as much of it as we can live.
+
+        Returns False if the config could not be saved to disk, so the
+        settings panel can surface that instead of silently discarding the
+        user's change and closing as if it worked.
+        """
         port_changed = new_cfg.port != self.cfg.port
         log_changed = new_cfg.log_path != self.cfg.log_path
+        # A telemetry toggle needs the same restart as a port change: each
+        # connection builds its own LogTailer at accept time, so a currently
+        # connected app keeps getting (or not getting) frames regardless of
+        # this flag until the listener itself is replaced.
+        telemetry_changed = new_cfg.telemetry_enabled != self.cfg.telemetry_enabled
         self.cfg = new_cfg
-        save(self.cfg, self.app_dir)
+        saved = save(self.cfg, self.app_dir)
         bridge_server.set_telemetry_enabled(self.cfg.telemetry_enabled)
-        if port_changed or log_changed:
-            # The listener is bound to a port and each connection builds its own
-            # tailer at accept time, so both of these need a fresh server.
+        if port_changed or log_changed or telemetry_changed:
             self.restart()
+        return saved
 
     def open_settings(self) -> None:
         from ui.settings import SettingsDialog
@@ -453,19 +516,53 @@ class BridgeApp:
         SettingsDialog(self.root, self.cfg, self.app_dir, on_save=self.apply_settings)
 
     def on_close(self) -> None:
-        self.cfg.window_height = max(self.root.winfo_height(), MIN_HEIGHT)
-        save(self.cfg, self.app_dir)
-        if not self.stop_server(timeout=3.0):
-            logging.warning("Server thread did not stop in time — exiting anyway.")
+        # Tk's WM_DELETE_WINDOW dispatcher swallows an exception raised here
+        # to a stream that's None in a --windowed build, which would silently
+        # skip the destroy() below and leave the window (and the daemon
+        # server thread still holding the port) stuck open with no way to
+        # close it but Task Manager. Nothing between here and destroy() may
+        # be allowed to prevent that call from running.
+        try:
+            self.cfg.window_height = max(self.root.winfo_height(), MIN_HEIGHT)
+            if not save(self.cfg, self.app_dir):
+                logging.warning(f"Could not save {self.app_dir} settings on close.")
+        except Exception:  # noqa: BLE001 - destroy() below must still run
+            logging.exception("Error while saving settings on close.")
+        try:
+            if not self.stop_server(timeout=3.0):
+                logging.warning("Server thread did not stop in time — exiting anyway.")
+        except Exception:  # noqa: BLE001 - destroy() below must still run
+            logging.exception("Error while stopping the server on close.")
         self.root.destroy()
 
     def run(self) -> None:
         self.root.mainloop()
 
 
-def run_gui(cfg: Config, app_dir: Path, config_warning: str | None = None) -> None:
+def run_gui(
+    cfg: Config | None,
+    app_dir: Path,
+    config_warning: str | None = None,
+    startup_warning: str | None = None,
+    startup_refusal: str | None = None,
+) -> None:
+    """Build and run the window.
+
+    `cfg` may be None when `startup_refusal` is set: a refusal (a bad --log
+    path, a retired insecure-auth flag) is caught before any config is loaded,
+    and the window still needs to open to show why, just without a server.
+
+    `enable_dpi_awareness` runs here, before BridgeApp creates its `tk.Tk()` --
+    see its docstring for why that ordering is required.
+    """
+    enable_dpi_awareness()
     bus = EventBus()
     configure_logging(bus, log_file=Path(app_dir) / "bridge.log")
     if config_warning:
         logging.warning(config_warning)
-    BridgeApp(cfg, bus, app_dir).run()
+    if startup_warning:
+        logging.warning(startup_warning)
+    app = BridgeApp(cfg or Config(), bus, app_dir, autostart_server=startup_refusal is None)
+    if startup_refusal:
+        app.show_startup_refusal(startup_refusal)
+    app.run()

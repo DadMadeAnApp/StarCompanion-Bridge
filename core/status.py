@@ -17,6 +17,9 @@ CONNECTED = "CONNECTED"
 PORT_IN_USE = "PORT_IN_USE"
 ERROR = "ERROR"
 
+# This palette is duplicated in ui/theme.py and ui/log_handler.py. Deliberately
+# not consolidated: a shared core/palette.py needs a layering decision (core/
+# cannot import from ui/) that's a separate change from this fix wave.
 _GREY = "#6b7785"
 _BLUE = "#4aa8ff"
 _GREEN = "#4ade80"
@@ -92,3 +95,16 @@ class StatusModel:
             where = f"Port {self._port}" if self._port else "Port"
             return f"{where} in use — is the bridge already running?"
         return "Error — see activity log"
+
+    @property
+    def header_text(self) -> str:
+        """A headline short enough for the header row, which shares its width
+        with the Settings and Restart buttons in a 520px window.
+
+        Only PORT_IN_USE needs its own shorter form -- at 12pt bold, the full
+        `text` sentence clips mid-word ("...is the brid"). The full sentence
+        still reaches the user via the failure row, which uses `text`.
+        """
+        if self._status == PORT_IN_USE:
+            return f"Port {self._port} in use" if self._port else "Port in use"
+        return self.text

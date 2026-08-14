@@ -35,11 +35,38 @@ def test_an_explicit_port_is_returned(monkeypatch):
 
 
 def test_a_missing_log_path_still_refuses_to_start(monkeypatch, tmp_path):
+    # A bad --log path is now carried as a StartupRefusal on args rather than
+    # exiting immediately from _parse_options — this runs before any window
+    # exists, so start() decides (console exit vs. GUI failure row) once it
+    # knows which mode owns the output. See the console/GUI tests below for
+    # the two ways this still refuses to start.
     monkeypatch.setattr(sys, "argv",
                         ["bridge_server.py", "--log", str(tmp_path / "nope.log")])
+    args = bridge_server._parse_options()
+    assert isinstance(args.refusal, bridge_server.StartupRefusal)
+    assert "does not exist" in args.refusal.message
+
+
+def test_a_missing_log_path_refuses_in_console_mode(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "argv",
+                        ["bridge_server.py", "--console", "--log", str(tmp_path / "nope.log")])
+    monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
     monkeypatch.setattr("builtins.input", lambda *a: "")
     with pytest.raises(SystemExit):
-        bridge_server._parse_options()
+        bridge_server.start()
+
+
+def test_a_missing_log_path_delivers_its_message_to_the_gui(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "argv",
+                        ["bridge_server.py", "--log", str(tmp_path / "nope.log")])
+    monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
+    seen = {}
+    monkeypatch.setattr("ui.app.run_gui",
+                        lambda cfg, app_dir, config_warning=None, startup_warning=None,
+                        startup_refusal=None: seen.update(refusal=startup_refusal, cfg=cfg))
+    bridge_server.start()
+    assert seen["cfg"] is None
+    assert "does not exist" in seen["refusal"]
 
 
 def test_an_existing_log_path_is_accepted(monkeypatch, tmp_path):
@@ -52,17 +79,37 @@ def test_an_existing_log_path_is_accepted(monkeypatch, tmp_path):
 
 def test_the_retired_no_auth_optouts_still_refuse(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["bridge_server.py", "--insecure-no-auth"])
+    args = bridge_server._parse_options()
+    assert isinstance(args.refusal, bridge_server.StartupRefusal)
+    assert "no longer supported" in args.refusal.message
+
+
+def test_the_retired_no_auth_optout_refuses_in_console_mode(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "argv", ["bridge_server.py", "--console", "--insecure-no-auth"])
+    monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
     monkeypatch.setattr("builtins.input", lambda *a: "")
     with pytest.raises(SystemExit):
-        bridge_server._parse_options()
+        bridge_server.start()
+
+
+def test_the_retired_no_auth_optout_delivers_its_message_to_the_gui(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "argv", ["bridge_server.py", "--insecure-no-auth"])
+    monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
+    seen = {}
+    monkeypatch.setattr("ui.app.run_gui",
+                        lambda cfg, app_dir, config_warning=None, startup_warning=None,
+                        startup_refusal=None: seen.update(refusal=startup_refusal, cfg=cfg))
+    bridge_server.start()
+    assert seen["cfg"] is None
+    assert "no longer supported" in seen["refusal"]
 
 
 def test_the_env_var_optout_still_refuses(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["bridge_server.py"])
     monkeypatch.setenv("STARCOMPANION_INSECURE_NO_AUTH", "1")
-    monkeypatch.setattr("builtins.input", lambda *a: "")
-    with pytest.raises(SystemExit):
-        bridge_server._parse_options()
+    args = bridge_server._parse_options()
+    assert isinstance(args.refusal, bridge_server.StartupRefusal)
+    assert "no longer supported" in args.refusal.message
 
 
 def test_start_launches_the_gui_by_default(monkeypatch, tmp_path):
@@ -70,7 +117,8 @@ def test_start_launches_the_gui_by_default(monkeypatch, tmp_path):
     monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
     launched = {}
     monkeypatch.setattr("ui.app.run_gui",
-                        lambda cfg, app_dir, config_warning=None: launched.update(
+                        lambda cfg, app_dir, config_warning=None, startup_warning=None,
+                        startup_refusal=None: launched.update(
                             port=cfg.port, dir=app_dir))
     bridge_server.start()
     assert launched["port"] == 8765
@@ -85,7 +133,8 @@ def test_start_prefers_the_configured_port_over_the_default(monkeypatch, tmp_pat
     monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
     seen = {}
     monkeypatch.setattr("ui.app.run_gui",
-                        lambda cfg, app_dir, config_warning=None: seen.update(port=cfg.port))
+                        lambda cfg, app_dir, config_warning=None, startup_warning=None,
+                        startup_refusal=None: seen.update(port=cfg.port))
     bridge_server.start()
     assert seen["port"] == 9100
 
@@ -98,7 +147,8 @@ def test_a_cli_port_beats_the_configured_one(monkeypatch, tmp_path):
     monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
     seen = {}
     monkeypatch.setattr("ui.app.run_gui",
-                        lambda cfg, app_dir, config_warning=None: seen.update(
+                        lambda cfg, app_dir, config_warning=None, startup_warning=None,
+                        startup_refusal=None: seen.update(
                             port=cfg.port, from_cli=cfg.port_from_cli))
     bridge_server.start()
     assert seen["port"] == 7000

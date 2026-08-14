@@ -11,6 +11,8 @@ import contextlib
 import sys
 from pathlib import Path
 
+# This palette is duplicated in core/status.py and ui/log_handler.py.
+# Deliberately not consolidated -- see core/status.py's note.
 BG = "#14181d"
 PANEL = "#1b2027"
 ACCENT = "#4aa8ff"
@@ -27,7 +29,15 @@ FONT_MONO = ("Consolas", 9)
 
 
 def enable_dpi_awareness() -> None:
-    """Ask Windows not to bitmap-scale us; without this, text is blurry."""
+    """Ask Windows not to bitmap-scale us; without this, text is blurry.
+
+    Must be called before any window (Tk or otherwise) is created by this
+    process. Windows decides whether to bitmap-scale a process the moment it
+    creates its first window, so calling this from BridgeApp.__init__ -- after
+    `tk.Tk()` has already run, or with a caller-supplied `root` that's already
+    older than that -- is too late to do anything. Call it at the top of
+    `run_gui`, before BridgeApp is constructed.
+    """
     if sys.platform != "win32":
         return
     import ctypes
@@ -49,7 +59,11 @@ def apply_theme(root) -> None:
     root.configure(bg=BG)
     style = ttk.Style(root)
     # "clam" is the one bundled theme that respects background/foreground on
-    # Windows; the native theme silently ignores them.
+    # Windows; the native theme silently ignores them. Windows is the only
+    # shipping target -- on other platforms (e.g. macOS) "clam" is applied the
+    # same way but several ttk widgets (notably the Combobox) render partly
+    # native regardless, so a grey combobox on a Mac dev machine is expected,
+    # not a bug. No platform branch is planned; not in scope for this fix wave.
     with contextlib.suppress(Exception):
         style.theme_use("clam")
 

@@ -8,6 +8,7 @@ panel already closed and nothing on screen explaining it.
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import socket
 import sys
 import tkinter as tk
@@ -109,6 +110,8 @@ class SettingsDialog:
         ttk.Checkbutton(body, text="Live telemetry (mission, notifications, location)",
                         variable=self.telemetry_var).grid(row=5, column=0, columnspan=2,
                                                           sticky="w", pady=(14, 0))
+        self.telemetry_var.trace_add("write", lambda *_: self.save_button.configure(
+            text=self._save_label()))
 
         self.autostart_var = tk.BooleanVar(value=cfg.start_with_windows)
         self.autostart_check = ttk.Checkbutton(body, text="Start with Windows",
@@ -134,8 +137,13 @@ class SettingsDialog:
 
     def _save_label(self) -> str:
         # Renaming the button is the honest way to tell the user their phone is
-        # about to be disconnected for a moment.
-        return "Save & Restart" if self.port_var.get().strip() != str(self.cfg.port) else "Save"
+        # about to be disconnected for a moment. A telemetry toggle needs the
+        # same restart as a port change -- each connection builds its own
+        # LogTailer at accept time, so turning telemetry off doesn't stop an
+        # already-connected phone's feed without one.
+        port_changed = self.port_var.get().strip() != str(self.cfg.port)
+        telemetry_changed = bool(self.telemetry_var.get()) != self.cfg.telemetry_enabled
+        return "Save & Restart" if (port_changed or telemetry_changed) else "Save"
 
     def _auto_note(self) -> str:
         if self.log_var.get().strip():
@@ -168,17 +176,18 @@ class SettingsDialog:
             self.error_label.configure(text=message, foreground=ERROR)
             return False
 
-        updated = Config(
+        # dataclasses.replace rather than hand-listing every Config field: a
+        # field added to Config later is carried over from self.cfg by
+        # default instead of silently reverting to Config()'s default every
+        # time the user presses Save, with nothing to catch the omission.
+        updated = dataclasses.replace(
+            self.cfg,
             port=int(self.port_var.get()) if not self.cfg.port_from_cli else self.cfg.port,
             log_path=(self.log_var.get().strip() or None) if not self.cfg.log_from_cli
             else self.cfg.log_path,
             telemetry_enabled=bool(self.telemetry_var.get()),
             start_with_windows=bool(self.autostart_var.get()),
-            minimize_to_tray=self.cfg.minimize_to_tray,
-            window_height=self.cfg.window_height,
             extras=dict(self.cfg.extras),
-            port_from_cli=self.cfg.port_from_cli,
-            log_from_cli=self.cfg.log_from_cli,
         )
 
         if autostart.supported():
@@ -188,8 +197,19 @@ class SettingsDialog:
             else:
                 autostart.disable()
 
+        # `on_save` may report failure (e.g. the config couldn't be written to
+        # an unwritable app_dir) by returning False explicitly; a plain
+        # callback with no return value (None) is treated as success so
+        # existing callers that don't opt into this aren't forced to.
+        result = self._on_save(updated)
+        if result is False:
+            self.error_label.configure(
+                text="Could not save settings — the change was not applied.",
+                foreground=ERROR,
+            )
+            return False
+
         self.result = updated
-        self._on_save(updated)
         with contextlib.suppress(Exception):
             self.top.destroy()
         return True
