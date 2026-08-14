@@ -83,7 +83,12 @@ def test_serve_returns_when_stop_is_set(tmp_path, monkeypatch):
     asyncio.run(run())
 
 
-def test_serve_prints_nothing(tmp_path, monkeypatch, capsys):
+def test_serve_makes_no_bare_print_calls(tmp_path, monkeypatch, capsys):
+    # Without configure_console_logging(), the root logger has no handler, so
+    # this only proves serve() itself never calls print() directly — it does
+    # not prove anything about what logging.info() produces once a handler is
+    # attached. See test_console_mode_setup_notices_get_timestamps_but_the_banner_does_not
+    # for that.
     monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
 
     async def run():
@@ -94,6 +99,74 @@ def test_serve_prints_nothing(tmp_path, monkeypatch, capsys):
 
     asyncio.run(run())
     assert capsys.readouterr().out == ""
+
+
+def test_console_mode_setup_notices_get_timestamps_but_the_banner_does_not(
+    tmp_path, monkeypatch, capsys
+):
+    # Pins the ruling that narrowed the "byte-identical --console output"
+    # constraint: the startup banner/QR/pairing details stay print-only and
+    # unchanged, but the cert-setup notices go through logging (so the GUI can
+    # show them) and therefore carry the standard timestamp prefix in console
+    # mode.
+    monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
+    root = logging.getLogger()
+    saved_handlers = root.handlers[:]
+    saved_level = root.level
+    try:
+        # basicConfig() is a no-op if the root logger already has a handler —
+        # pytest's own logging capture installs one — so clear it first to get
+        # a real handler installed for this test.
+        root.handlers[:] = []
+        bridge_server.configure_console_logging()
+
+        async def run():
+            stop = asyncio.Event()
+            await bridge_server.serve(
+                port=_free_port(), on_ready=lambda info: stop.set(), stop=stop
+            )
+
+        asyncio.run(run())
+        out = capsys.readouterr().out
+        assert "[setup] Generating TLS certificate" in out
+        assert "[setup] Certificate saved to" in out
+        # "%H:%M:%S" timestamp prefix, e.g. "14:03:07  [setup] ..."
+        import re
+
+        assert re.search(r"\d{2}:\d{2}:\d{2}  \[setup\] Generating TLS certificate", out)
+        assert "StarCompanion Desktop Bridge" not in out
+    finally:
+        root.handlers[:] = saved_handlers
+        root.setLevel(saved_level)
+
+
+def test_a_second_serve_call_with_no_on_clients_clears_the_previous_callback(
+    tmp_path, monkeypatch
+):
+    # Task 9's GUI restart calls serve() repeatedly in one process. If
+    # on_clients=None left the old callback installed, a restart without a
+    # fresh callback would keep firing into a dead consumer.
+    monkeypatch.setattr(bridge_server, "_app_dir", lambda: tmp_path)
+    seen = []
+
+    async def run():
+        stop1 = asyncio.Event()
+        await bridge_server.serve(
+            port=_free_port(),
+            on_ready=lambda info: stop1.set(),
+            on_clients=seen.append,
+            stop=stop1,
+        )
+        stop2 = asyncio.Event()
+        await bridge_server.serve(
+            port=_free_port(),
+            on_ready=lambda info: stop2.set(),
+            on_clients=None,
+            stop=stop2,
+        )
+        assert bridge_server._on_clients is None
+
+    asyncio.run(run())
 
 
 def test_a_taken_port_raises_and_maps_to_port_in_use(tmp_path, monkeypatch):

@@ -65,6 +65,7 @@ import secrets
 import socket
 import ssl
 import time
+from collections.abc import Callable
 from pathlib import Path
 import websockets
 from pynput.keyboard import Key, KeyCode, Controller
@@ -314,6 +315,11 @@ def _generate_cert(cert_path: Path, key_path: Path, ips: list[str]) -> None:
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import rsa
 
+    # These setup notices go through logging (not print) so the GUI can surface
+    # them during first-run cert generation instead of showing a blank window
+    # for several seconds with no explanation. In --console mode this means
+    # they carry the standard timestamp prefix, unlike the startup banner,
+    # which is print-only and stays byte-identical.
     logging.info("[setup] Generating TLS certificate…")
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "StarCompanion Bridge")])
@@ -468,7 +474,7 @@ def _ensure_ssl_context(ips: list[str]) -> tuple[ssl.SSLContext, Path]:
     if not (cert_path.exists() and key_path.exists()):
         _generate_cert(cert_path, key_path, ips)
     elif not _cert_covers(cert_path, ips):
-        logging.info("[setup] Local IP changed — reissuing certificate.")
+        logging.info("[setup] Local IP changed — reissuing certificate.")  # see _generate_cert's comment on logging vs. print
         _generate_cert(cert_path, key_path, ips)
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ctx.load_cert_chain(cert_path, key_path)
@@ -920,8 +926,8 @@ async def _run_command(ws, msg: dict) -> None:
 # ── Entry point ───────────────────────────────────────────────────────────────
 async def serve(
     port: int = PORT,
-    on_ready=None,
-    on_clients=None,
+    on_ready: Callable[[dict], None] | None = None,
+    on_clients: Callable[[int], None] | None = None,
     stop: asyncio.Event | None = None,
 ) -> None:
     """Bind and serve. Prints nothing — the caller decides how to present it.
@@ -933,9 +939,12 @@ async def serve(
     `on_ready` and `on_clients` are called on this thread. A GUI caller must do
     nothing in them but queue an event.
     """
+    # Assigned unconditionally: a GUI restart (Task 9) calls serve() repeatedly
+    # in one process, and passing on_clients=None must actually clear a stale
+    # callback from a previous run rather than leaving it wired to a dead
+    # consumer.
     global _on_clients
-    if on_clients is not None:
-        _on_clients = on_clients
+    _on_clients = on_clients
 
     ips = _local_ips()
     ssl_ctx, cert_path = _ensure_ssl_context(ips)
