@@ -19,8 +19,19 @@ if errorlevel 1 (
     exit /b 1
 )
 
-python -m PyInstaller --onefile --console --clean --noconfirm ^
+if not exist "assets\bridge.ico" (
+    python tools\make_icon.py
+    if errorlevel 1 (
+        echo ERROR: could not generate assets\bridge.ico
+        pause
+        exit /b 1
+    )
+)
+
+python -m PyInstaller --onefile --windowed --clean --noconfirm ^
     --name StarCompanionBridge ^
+    --icon assets\bridge.ico ^
+    --add-data "assets\bridge.ico;assets" ^
     --hidden-import=pynput.keyboard._win32 ^
     --hidden-import=pynput.mouse._win32 ^
     bridge_server.py

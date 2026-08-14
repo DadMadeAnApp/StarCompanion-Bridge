@@ -2,12 +2,7 @@
 
 ## Now
 
-**Desktop GUI** — replacing the console window with a dark-themed Tkinter window
-(status, pairing QR, activity log, settings panel). Console mode survives behind
-`--console`.
-
-Design: [`docs/superpowers/specs/2026-08-14-bridge-gui-design.md`](docs/superpowers/specs/2026-08-14-bridge-gui-design.md)
-Status: design approved 2026-08-14, awaiting spec review, then implementation plan.
+Nothing in progress.
 
 ## Next up
 
@@ -34,3 +29,9 @@ Status: design approved 2026-08-14, awaiting spec review, then implementation pl
   shows notifications instead.
 - Standalone single-file exe via `build_exe.bat` / PyInstaller.
 - Test suite under `tests/`.
+- Desktop GUI: dark-themed Tkinter window with status, pairing card and QR,
+  telemetry state, live activity pane, and a settings panel (port, Game.log
+  path, telemetry switch, start-with-Windows). Failures stay on screen with a
+  Retry rather than closing the window. `--console` keeps the original terminal
+  behaviour. Design:
+  `docs/superpowers/specs/2026-08-14-bridge-gui-design.md`.

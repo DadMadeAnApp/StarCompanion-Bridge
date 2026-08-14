@@ -34,6 +34,9 @@ inject keystrokes into your PC.
 
 **Secrets**: `bridge_token.txt`, `bridge_key.pem`, and `bridge_cert.pem` are gitignored — they are cryptographic material and should never be committed or shared.
 
+`bridge_config.json` and `bridge.log` are also gitignored — they are per-machine
+and can contain your install paths.
+
 **Certificate pinning**: The startup banner prints your certificate's SHA-256 fingerprint. Clients that want to verify the server identity can pin this value.
 
 ---
@@ -148,6 +151,56 @@ the app surfaces as its own distinct state rather than an empty list.
 
 ---
 
+## The bridge window
+
+Launching the bridge opens a window, not a console. It shows:
+
+- **Status** — a coloured dot and a line of text: starting, listening, connected
+  (with the number of paired apps), or a failure and its reason.
+- **Pairing** — the QR code plus the IP, port, token, and certificate
+  fingerprint, each with a Copy button. The token is masked until you press
+  **Show**, so a screenshot or a stream does not leak it, and the QR has its own
+  **Hide QR** button for the same reason.
+- **Multiple IP addresses** — if your PC has several (VPN, Hyper-V, or WSL
+  adapters), the IP row becomes a dropdown. The displayed address and the QR
+  follow whichever one you pick, which is useful for entering an address by
+  hand or expressing a preference — the QR itself already carries every local
+  IP, so the app tries them on its own even without picking one here.
+- **Telemetry** — whether `Game.log` was found, and where.
+- **Activity** — the live log, with Pause and Clear. The full history is always
+  written to `bridge.log` next to the exe, which is the file to attach to a bug
+  report.
+
+If the bridge cannot start — most often because the port is already in use — the
+window stays open, says so, and offers **Retry** and **Open Settings**. Nothing
+disappears before you can read it.
+
+### Settings
+
+The gear button opens Settings:
+
+| Setting | Notes |
+|---|---|
+| **Port** | 1024–65535. Checked for availability before saving, so you cannot save a port that is already taken. Changing it restarts the listener. |
+| **Game.log** | Leave empty to auto-detect; the panel shows what auto-detection found. **Browse…** picks the file for a non-standard install. |
+| **Live telemetry** | Turns the whole telemetry feature off. With it off the bridge behaves as though no `Game.log` exists. |
+| **Start with Windows** | Adds a per-user entry to `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. No admin rights needed. Available only for the packaged exe. |
+
+Settings are saved to `bridge_config.json` next to the exe. A command-line flag
+always wins over the file: if you pass `--port` or `--log`, that field appears
+greyed out with a note saying which flag controls it.
+
+### Running in the terminal instead
+
+```
+python bridge_server.py --console
+```
+
+That is the original behaviour: startup banner, QR code drawn in the terminal,
+and log lines on stdout. Use it for headless setups and for debugging.
+
+---
+
 ## Running the script directly
 
 Requires Python 3.10 or later — download from [python.org](https://www.python.org/downloads/).
@@ -161,7 +214,10 @@ Dependencies (`websockets`, `pynput`, `cryptography`, `qrcode`) install automati
 Options:
 
 ```
---port N             listen on a different port (default 8765)
+--console            run in the terminal with the startup banner, instead of
+                      opening the window
+--port N             listen on a different port (default 8765, or the port saved
+                      in bridge_config.json)
 --log PATH           read Game.log from PATH instead of auto-detecting it
                       (see "Live telemetry" below)
 ```
