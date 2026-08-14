@@ -18,3 +18,6 @@ __pycache__/
 venv/
 Game.log
 .DS_Store
+bridge_config.json
+bridge_config.json.bad
+bridge.log
