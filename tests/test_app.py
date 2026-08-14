@@ -1,105 +1,14 @@
 import logging
-import sys
 import threading
-import types
 
 import pytest
 
+from tests.conftest import install_pynput_stub_if_needed
 
-def _install_pynput_stub_if_needed():
-    """Stub pynput before ui.app pulls in bridge_server, same as test_bridge_server.py.
-
-    ui.app imports bridge_server, whose SPECIAL_KEYS table is built at import
-    time and references Key members (e.g. Key.insert) that macOS's real
-    pynput backend does not define. Without this, importing ui.app here
-    raises AttributeError on this platform -- and once the real pynput module
-    is cached in sys.modules, test_bridge_server.py's own stub-install (guarded
-    on "already in sys.modules") would silently no-op and hit the same error.
-    Collection order is alphabetical, so this file runs first and must not
-    leave a poisoned sys.modules behind for the rest of the suite.
-    """
-    if "pynput" in sys.modules:
-        return
-
-    pynput = types.ModuleType("pynput")
-    keyboard_mod = types.ModuleType("pynput.keyboard")
-    mouse_mod = types.ModuleType("pynput.mouse")
-
-    class _KeySentinel:
-        def __init__(self, name):
-            self._name = name
-            self.name = name
-
-        def __repr__(self):
-            return f"Key.{self._name}"
-
-    class Key:
-        pass
-
-    for name in [
-        "caps_lock", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9",
-        "f10", "f11", "f12", "esc", "tab", "space", "enter", "backspace",
-        "delete", "insert", "home", "end", "page_up", "page_down",
-        "up", "down", "left", "right", "num_lock", "scroll_lock", "pause",
-        "print_screen",
-        "alt_l", "alt_r", "ctrl_l", "ctrl_r", "shift_l", "shift_r", "cmd",
-    ]:
-        setattr(Key, name, _KeySentinel(name))
-
-    class KeyCode:
-        def __init__(self, vk=None, char=None):
-            self.vk = vk
-            self.char = char
-
-        def __eq__(self, other):
-            return isinstance(other, KeyCode) and self.vk == other.vk and self.char == other.char
-
-        def __repr__(self):
-            return f"KeyCode(vk={self.vk!r}, char={self.char!r})"
-
-    class Controller:
-        def press(self, *a, **k):
-            pass
-
-        def release(self, *a, **k):
-            pass
-
-    keyboard_mod.Key = Key
-    keyboard_mod.KeyCode = KeyCode
-    keyboard_mod.Controller = Controller
-
-    class Button:
-        left = _KeySentinel("left")
-        right = _KeySentinel("right")
-        middle = _KeySentinel("middle")
-
-    class MouseController:
-        def __init__(self):
-            self.events = []
-
-        def click(self, button, *a, **k):
-            self.events.append(("click", button))
-
-        def press(self, button, *a, **k):
-            self.events.append(("press", button))
-
-        def release(self, button, *a, **k):
-            self.events.append(("release", button))
-
-        def scroll(self, *a, **k):
-            pass
-
-    mouse_mod.Button = Button
-    mouse_mod.Controller = MouseController
-
-    pynput.keyboard = keyboard_mod
-    pynput.mouse = mouse_mod
-    sys.modules["pynput"] = pynput
-    sys.modules["pynput.keyboard"] = keyboard_mod
-    sys.modules["pynput.mouse"] = mouse_mod
-
-
-_install_pynput_stub_if_needed()
+# ui.app imports bridge_server, whose SPECIAL_KEYS table needs a pynput stub
+# on this platform (see conftest.install_pynput_stub_if_needed's docstring).
+# Must run before the `from ui.app import ...` below.
+install_pynput_stub_if_needed()
 
 from core.config import Config
 from core.events import (
@@ -310,3 +219,46 @@ def test_server_thread_emits_ready_and_stops_cleanly(tmp_path, monkeypatch):
 def test_server_thread_is_a_daemon_so_a_hung_tailer_cannot_outlive_the_window(tmp_path):
     thread = ServerThread(port=1, bus=EventBus())
     assert thread.daemon is True
+
+
+def test_a_never_started_thread_can_still_be_stopped_harmlessly():
+    thread = ServerThread(port=1, bus=EventBus())
+    assert thread.stop(timeout=1) is True
+
+
+def test_a_failing_event_handler_is_isolated_and_does_not_stop_the_batch(app, monkeypatch):
+    real_handle = app._handle
+
+    def flaky_handle(event):
+        if isinstance(event, Fatal):
+            raise RuntimeError("boom while handling Fatal")
+        real_handle(event)
+
+    monkeypatch.setattr(app, "_handle", flaky_handle)
+    app.bus.emit(Fatal(kind=FATAL_CRASH, message="ignored"))
+    app.bus.emit(LogLine(ts="21:04:11", level=logging.INFO, text="still processed"))
+
+    app.drain_once()  # must not raise despite the first event's handler blowing up
+
+    assert any("still processed" in line for line in app.activity.lines)
+    assert any("failed to handle" in line for line in app.activity.lines)
+
+
+def test_the_drain_loop_reschedules_itself_even_if_a_tick_raises(app, monkeypatch):
+    scheduled = []
+    monkeypatch.setattr(app.root, "after",
+                        lambda ms, fn: scheduled.append((ms, fn)))
+    monkeypatch.setattr(app, "drain_once",
+                        lambda: (_ for _ in ()).throw(RuntimeError("tick blew up")))
+
+    # Tk's own callback dispatcher is what actually swallows an exception
+    # raised inside a `root.after` callback in real use; here we only need to
+    # prove the `finally` re-armed the poll before that exception propagates.
+    with pytest.raises(RuntimeError, match="tick blew up"):
+        app._tick()
+
+    assert len(scheduled) == 1
+    from ui.app import DRAIN_INTERVAL_MS
+
+    assert scheduled[0][0] == DRAIN_INTERVAL_MS
+    assert scheduled[0][1] == app._tick

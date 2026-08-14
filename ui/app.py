@@ -108,6 +108,12 @@ class ServerThread(threading.Thread):
 
     def stop(self, timeout: float = 3.0) -> bool:
         """Ask the loop to unwind and wait for it. True if the thread exited."""
+        if self.ident is None:
+            # Never started -- join() would raise RuntimeError on a thread
+            # that was constructed but not start()ed. Not reachable via
+            # BridgeApp today, but the invariant should hold on its own
+            # rather than depending on every caller starting it first.
+            return True
         self._ready_to_stop.wait(timeout=1.0)
         if self._loop is not None and self._stop is not None:
             with contextlib.suppress(RuntimeError):
@@ -235,13 +241,27 @@ class BridgeApp:
 
     # ── Event drain ───────────────────────────────────────────────────────────
     def _tick(self) -> None:
-        self.drain_once()
-        self.root.after(DRAIN_INTERVAL_MS, self._tick)
+        # The reschedule must happen no matter what drain_once() does: Tk's
+        # callback wrapper swallows an exception raised here, and if the
+        # reschedule sat after that call in a plain sequence, one bad event
+        # would silently stop the 100ms poll forever -- the window keeps
+        # looking alive while nothing on it ever updates again.
+        try:
+            self.drain_once()
+        finally:
+            self.root.after(DRAIN_INTERVAL_MS, self._tick)
 
     def drain_once(self) -> None:
         events, dropped = self.bus.drain(limit=DRAIN_LIMIT)
         for event in events:
-            self._handle(event)
+            # One malformed event must not take the rest of the batch down
+            # with it -- report it in the activity pane and keep draining.
+            try:
+                self._handle(event)
+            except Exception as exc:  # noqa: BLE001 - isolate, don't propagate
+                logging.error(f"Failed to handle {event!r}: {exc}")
+                with contextlib.suppress(Exception):
+                    self.activity.note(f"… failed to handle an event: {exc}")
         if dropped:
             plural = "event" if dropped == 1 else "events"
             self.activity.note(f"… {dropped} {plural} dropped")
@@ -384,6 +404,11 @@ class BridgeApp:
             row.set_value("")
         self.ip_selector.grid_remove()
         self._ips = []
+        self.qr_payload = ""
+        # Otherwise the old QR sits on screen, pointing at credentials the
+        # about-to-restart server no longer honours, until the next Ready.
+        self.qr_label.configure(image="")
+        self._qr_image = None
         self._refresh_status()
         self.start_server()
 
