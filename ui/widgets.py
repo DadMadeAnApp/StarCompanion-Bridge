@@ -152,9 +152,6 @@ class ActivityPane(ttk.Frame if ttk else object):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        self._text.tag_configure("muted", foreground=MUTED)
-        self._text.tag_configure("accent", foreground=ACCENT)
-
     @property
     def paused(self) -> bool:
         return self._paused
@@ -188,13 +185,16 @@ class ActivityPane(ttk.Frame if ttk else object):
             self._text.tag_configure(tag, foreground=color)
 
         at_bottom = self._text.yview()[1] >= 0.999
+        # Detect if the deque is at capacity before append; if so, it will evict
+        # the oldest line, and we must delete the corresponding widget line.
+        was_at_capacity = len(self._lines) == self._capacity
         self._lines.append(line)
         self._text.configure(state="normal")
         self._text.insert("end", line + "\n", tag)
         # Trim in lockstep with the deque so the widget and `lines` never disagree.
-        excess = int(self._text.index("end-1c").split(".")[0]) - 1 - self._capacity
-        if excess > 0:
-            self._text.delete("1.0", f"{excess + 1}.0")
+        # When the deque evicts (was at capacity), delete exactly one line from the widget.
+        if was_at_capacity:
+            self._text.delete("1.0", "2.0")
         self._text.configure(state="disabled")
         # Only follow the tail if the user was already at it; yanking the view
         # back while they are reading history is the classic log-pane annoyance.

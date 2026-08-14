@@ -82,3 +82,13 @@ def test_note_writes_a_muted_line(tk_root):
     pane = ActivityPane(tk_root)
     pane.note("… 5 events dropped")
     assert pane.lines == ["… 5 events dropped"]
+
+
+def test_widget_and_deque_stay_in_lockstep(tk_root):
+    pane = ActivityPane(tk_root, capacity=5)
+    # Append well past capacity to trigger multiple evictions
+    for i in range(12):
+        pane.append("21:04:00", logging.INFO, f"line {i}")
+    # The widget's own content must match the deque's content exactly
+    widget_lines = pane._text.get("1.0", "end-1c").splitlines()
+    assert widget_lines == pane.lines
