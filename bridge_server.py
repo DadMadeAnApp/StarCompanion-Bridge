@@ -1019,13 +1019,16 @@ async def main(port: int = PORT) -> None:
     await serve(port=port, on_ready=console_banner)
 
 
-def _parse_options() -> int:
-    """Returns the port to listen on.
+def _parse_options() -> argparse.Namespace:
+    """Parses the command line. `port` is None unless a flag supplied one.
+
+    Returning None rather than PORT is what lets bridge_config.json own the port
+    when no flag was passed, while a flag still wins over the file.
 
     The pairing token is mandatory. The old opt-outs (--insecure-no-auth, the
     STARCOMPANION_INSECURE_NO_AUTH env var, and the INSECURE_NO_AUTH sentinel
-    file) are still recognised so an existing setup gets a clear message
-    instead of silently starting with auth it no longer has.
+    file) are still recognised so an existing setup gets a clear message instead
+    of silently starting with auth it no longer has.
     """
     parser = argparse.ArgumentParser(description="StarCompanion Desktop Bridge")
     parser.add_argument(
@@ -1034,8 +1037,12 @@ def _parse_options() -> int:
         help=argparse.SUPPRESS,  # retired — always errors out
     )
     parser.add_argument(
-        "--port", type=int, default=PORT,
-        help=f"port to listen on (default {PORT})",
+        "--console", action="store_true",
+        help="run in the terminal with the startup banner instead of the window",
+    )
+    parser.add_argument(
+        "--port", type=int, default=None,
+        help=f"port to listen on (default {PORT}, or the saved setting)",
     )
     parser.add_argument(
         "--log", type=str, default=None, dest="log_path",
@@ -1066,7 +1073,7 @@ def _parse_options() -> int:
     if sentinel.exists():
         _refuse_no_auth(f"The INSECURE_NO_AUTH file is no longer supported.\nDelete it: {sentinel}")
 
-    return args.port
+    return args
 
 
 def _refuse_bad_log_path(candidate: Path) -> None:
@@ -1090,21 +1097,48 @@ def _refuse_no_auth(detail: str) -> None:
     sys.exit(1)
 
 
-if __name__ == "__main__":
-    _port = _parse_options()
+def run_console(port: int) -> None:
+    """Today's terminal experience, unchanged."""
     configure_console_logging()
     try:
-        asyncio.run(main(port=_port))
+        asyncio.run(main(port=port))
     except KeyboardInterrupt:
         print("\nBridge stopped.")
     except OSError as e:
-        # WSAEADDRINUSE surfaces as winerror or as errno depending on how
-        # asyncio re-raises it; EADDRINUSE is 48 on macOS, 98 on Linux.
-        if getattr(e, "winerror", None) == 10048 or e.errno in (10048, 48, 98):
-            print(f"\nERROR: port {_port} is already in use — is the bridge already running?")
+        if fatal_kind_for(e) == "PORT_IN_USE":
+            print(f"\nERROR: port {port} is already in use — is the bridge already running?")
         else:
             print(f"\nERROR: {e}")
-        input("\nPress Enter to close...")
+        with contextlib.suppress(EOFError):
+            input("\nPress Enter to close...")
     except Exception as e:
         print(f"\nERROR: {e}")
-        input("\nPress Enter to close...")
+        with contextlib.suppress(EOFError):
+            input("\nPress Enter to close...")
+
+
+def start() -> None:
+    args = _parse_options()
+    app_dir = _app_dir()
+
+    # Imported here, not at module scope: console mode must keep working even if
+    # core/ and ui/ are missing, and a --windowed build should not pay for Tk
+    # until it needs it.
+    from core.config import apply_cli, load
+
+    cfg, warning = load(app_dir)
+    cfg = apply_cli(cfg, cli_port=args.port, cli_log=args.log_path)
+
+    if args.console:
+        if warning:
+            print(f"[warn] {warning}")
+        run_console(cfg.port)
+        return
+
+    from ui.app import run_gui
+
+    run_gui(cfg, app_dir, config_warning=warning)
+
+
+if __name__ == "__main__":
+    start()
