@@ -78,6 +78,29 @@ PARSER_BUILD = "12344265"   # the build these parsers were verified against
 TELEMETRY_MAX_PER_SECOND = 20   # backstop only; observed peak is well under 2/min
 _log_path_override: Path | None = None
 
+# Master switch for the whole telemetry feature, set from the GUI's settings.
+# This sits above the existing per-connection subscribe opt-in: with it off, the
+# bridge behaves exactly as it does when no Game.log can be found, so the app
+# shows its existing "log not found" state instead of waiting for frames that
+# will never come.
+_telemetry_enabled = True
+
+
+def set_telemetry_enabled(enabled: bool) -> None:
+    global _telemetry_enabled
+    _telemetry_enabled = bool(enabled)
+
+
+def telemetry_enabled() -> bool:
+    return _telemetry_enabled
+
+
+def _resolve_log_path():
+    """The Game.log to tail, or None when disabled or not found."""
+    if not _telemetry_enabled:
+        return None
+    return _log_path_override or default_log_path()
+
 
 def _iso_now() -> str:
     """UTC timestamp in the same shape as the log's own ts (millisecond Z)."""
@@ -169,18 +192,22 @@ _NUMPAD_VKS: dict[str, int] = {
 }
 
 # ── Logging ─────────────────────────────────────────────────────────────────────
-# The Windows console defaults to cp1252, which raises on any non-ASCII text
-# in a log line. Force UTF-8 so logging can never crash on a stray character.
+# The Windows console defaults to cp1252, which raises on any non-ASCII text in
+# a log line. Force UTF-8 so logging can never crash on a stray character.
+# Under a PyInstaller --windowed build these streams are None, hence the suppress.
 for _stream in (sys.stdout, sys.stderr):
     with contextlib.suppress(Exception):
         _stream.reconfigure(encoding="utf-8", errors="replace")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(message)s",
-    datefmt="%H:%M:%S",
-    stream=sys.stdout,
-)
+
+def configure_console_logging() -> None:
+    """Console mode's logging: timestamped lines on stdout, as before."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s  %(message)s",
+        datefmt="%H:%M:%S",
+        stream=sys.stdout,
+    )
 
 # ── Helpers ─────────────────────────────────────────────────────────────────────
 _keyboard = Controller()
@@ -287,7 +314,7 @@ def _generate_cert(cert_path: Path, key_path: Path, ips: list[str]) -> None:
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import rsa
 
-    print("[setup] Generating TLS certificate…")
+    logging.info("[setup] Generating TLS certificate…")
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "StarCompanion Bridge")])
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -320,7 +347,7 @@ def _generate_cert(cert_path: Path, key_path: Path, ips: list[str]) -> None:
     ))
     _restrict_permissions(key_path)
     cert_path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
-    print(f"[setup] Certificate saved to {cert_path}")
+    logging.info(f"[setup] Certificate saved to {cert_path}")
 
 
 def _cert_covers(cert_path: Path, ips: list[str]) -> bool:
@@ -441,7 +468,7 @@ def _ensure_ssl_context(ips: list[str]) -> tuple[ssl.SSLContext, Path]:
     if not (cert_path.exists() and key_path.exists()):
         _generate_cert(cert_path, key_path, ips)
     elif not _cert_covers(cert_path, ips):
-        print("[setup] Local IP changed — reissuing certificate.")
+        logging.info("[setup] Local IP changed — reissuing certificate.")
         _generate_cert(cert_path, key_path, ips)
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ctx.load_cert_chain(cert_path, key_path)
@@ -652,6 +679,22 @@ class _RateLimiter:
 # Insertion-ordered, so the oldest connection can be evicted when at capacity.
 _connections: dict = {}
 
+# Set by serve() in GUI mode so the header can show a live count. Console mode
+# leaves it None and pays nothing.
+_on_clients = None
+
+
+def _track_connection(ws) -> None:
+    _connections[ws] = True
+    if _on_clients is not None:
+        _on_clients(len(_connections))
+
+
+def _untrack_connection(ws) -> None:
+    _connections.pop(ws, None)
+    if _on_clients is not None:
+        _on_clients(len(_connections))
+
 
 async def _authenticate(ws, token: str) -> bool:
     """Verify the pairing token, from the request or a first auth message."""
@@ -689,7 +732,7 @@ def make_handler(token: str | None):
         # locked out by its own not-yet-reaped stale sockets.
         while len(_connections) >= MAX_CONNECTIONS:
             oldest = next(iter(_connections))
-            _connections.pop(oldest, None)
+            _untrack_connection(oldest)
             logging.warning(f"At capacity — dropping oldest connection {oldest.remote_address}")
             with contextlib.suppress(Exception):
                 await oldest.close(code=1001, reason="replaced by newer connection")
@@ -697,14 +740,14 @@ def make_handler(token: str | None):
         if token is not None and not await _authenticate(ws, token):
             return
 
-        _connections[ws] = True
+        _track_connection(ws)
         limiter = _RateLimiter(MAX_MESSAGES_PER_SECOND)
         # remote_address becomes None once the socket closes — capture it now.
         peer = ws.remote_address
         logging.info(f"App connected  {peer}")
         pending: set[asyncio.Task] = set()
 
-        log_path = _log_path_override or default_log_path()
+        log_path = _resolve_log_path()
         tailer = LogTailer(log_path) if log_path else None
         session = TelemetrySession(
             game_build=tailer.game_build if tailer else None,
@@ -834,7 +877,7 @@ def make_handler(token: str | None):
         except websockets.exceptions.ConnectionClosed:
             pass
         finally:
-            _connections.pop(ws, None)
+            _untrack_connection(ws)
             for task in list(pending):
                 task.cancel()
             if pending:
@@ -875,19 +918,58 @@ async def _run_command(ws, msg: dict) -> None:
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
-async def main(port: int = PORT) -> None:
+async def serve(
+    port: int = PORT,
+    on_ready=None,
+    on_clients=None,
+    stop: asyncio.Event | None = None,
+) -> None:
+    """Bind and serve. Prints nothing — the caller decides how to present it.
+
+    `on_ready` is called once with a plain dict of pairing details; keeping it a
+    dict rather than an event type means this module never imports the GUI, so
+    console mode still runs if core/ and ui/ are absent.
+
+    `on_ready` and `on_clients` are called on this thread. A GUI caller must do
+    nothing in them but queue an event.
+    """
+    global _on_clients
+    if on_clients is not None:
+        _on_clients = on_clients
+
     ips = _local_ips()
     ssl_ctx, cert_path = _ensure_ssl_context(ips)
     token = _ensure_token()
 
-    # Bind before printing anything, so a failure to claim the port surfaces
-    # as an error instead of appearing after a "ready" banner.
+    # Bind before reporting anything, so a failure to claim the port surfaces as
+    # an error instead of arriving after a "ready" announcement.
     server = await websockets.serve(
         make_handler(token), "0.0.0.0", port,
         ssl=ssl_ctx, max_size=MAX_MESSAGE_BYTES,
         ping_interval=PING_INTERVAL, ping_timeout=PING_TIMEOUT,
     )
 
+    fingerprint = _cert_fingerprint(cert_path)
+    info = {
+        "ips": ips,
+        "port": port,
+        "token": token,
+        "cert_fp": fingerprint,
+        "pairing_uri": _pairing_uri(ips, port, token, _cert_fingerprint_b64(cert_path)),
+    }
+    if on_ready is not None:
+        on_ready(info)
+
+    async with server:
+        if stop is None:
+            await asyncio.Future()
+        else:
+            await stop.wait()
+
+
+def console_banner(info: dict) -> None:
+    """The startup banner and terminal QR, for --console mode."""
+    ips = info["ips"]
     print()
     print("=" * 60)
     print("  StarCompanion Desktop Bridge  (WSS/TLS)")
@@ -897,25 +979,35 @@ async def main(port: int = PORT) -> None:
         print("  Enter one of these IPs in the app (try the first):")
         for ip in ips:
             print(f"      {ip}")
-    print(f"  Port: {port}")
-    print(f"  Pairing token: {token}")
-    print(f"  Cert SHA-256: {_cert_fingerprint(cert_path)}")
+    print(f"  Port: {info['port']}")
+    print(f"  Pairing token: {info['token']}")
+    print(f"  Cert SHA-256: {info['cert_fp']}")
     print("=" * 60)
     print()
 
-    uri = _pairing_uri(ips, port, token, _cert_fingerprint_b64(cert_path))
-    if _print_qr(uri):
+    if _print_qr(info["pairing_uri"]):
         print()
         print("  Scan this in the StarCompanion app to pair.")
     else:
         # No QR (piped output, or a console without ANSI support) — the URI
         # still pairs if the app can take it by paste or deep link.
-        print(f"  Pairing link: {uri}")
+        print(f"  Pairing link: {info['pairing_uri']}")
     print()
     logging.info("Waiting for app to connect... (Star Citizen must be the active window)")
 
-    async with server:
-        await asyncio.Future()
+
+def fatal_kind_for(exc: BaseException) -> str:
+    """Classify a server-thread exception for the GUI's failure row."""
+    if isinstance(exc, OSError):
+        # WSAEADDRINUSE surfaces as winerror or as errno depending on how
+        # asyncio re-raises it; EADDRINUSE is 48 on macOS, 98 on Linux.
+        if getattr(exc, "winerror", None) == 10048 or exc.errno in (10048, 48, 98):
+            return "PORT_IN_USE"
+    return "CRASH"
+
+
+async def main(port: int = PORT) -> None:
+    await serve(port=port, on_ready=console_banner)
 
 
 def _parse_options() -> int:
@@ -991,6 +1083,7 @@ def _refuse_no_auth(detail: str) -> None:
 
 if __name__ == "__main__":
     _port = _parse_options()
+    configure_console_logging()
     try:
         asyncio.run(main(port=_port))
     except KeyboardInterrupt:
