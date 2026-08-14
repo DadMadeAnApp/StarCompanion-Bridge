@@ -71,6 +71,15 @@ def test_wrong_typed_values_fall_back_per_field(tmp_path):
     assert warning is not None
 
 
+def test_bool_window_height_falls_back_to_default(tmp_path):
+    (tmp_path / CONFIG_NAME).write_text(json.dumps(
+        {"version": 1, "window": {"height": True}}
+    ))
+    cfg, warning = load(tmp_path)
+    assert cfg.window_height == 620
+    assert warning is not None
+
+
 def test_cli_flags_win_over_the_config_file(tmp_path):
     cfg = Config(port=9000, log_path="F:/from/config/Game.log")
     merged = apply_cli(cfg, cli_port=7000, cli_log="D:/from/cli/Game.log")

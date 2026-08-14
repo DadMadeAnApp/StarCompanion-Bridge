@@ -86,8 +86,12 @@ def load(app_dir: Path) -> tuple[Config, str | None]:
             bad_fields.append("log_path")
 
     window = raw.get("window")
-    if isinstance(window, dict) and isinstance(window.get("height"), int):
-        cfg.window_height = window["height"]
+    if isinstance(window, dict):
+        h = window.get("height")
+        if isinstance(h, int) and not isinstance(h, bool):
+            cfg.window_height = h
+        elif h is not None:
+            bad_fields.append("window")
     elif window is not None:
         bad_fields.append("window")
 
