@@ -8,7 +8,6 @@ Nothing in progress.
 
 - Real app icon artwork, replacing the generated placeholder `.ico`.
 - System tray icon / minimize-to-tray (deliberately cut from the GUI work).
-- Windows visual QA pass on the shipped window (screenshot loop with a real PC).
 
 ## Done
 
@@ -35,3 +34,8 @@ Nothing in progress.
   Retry rather than closing the window. `--console` keeps the original terminal
   behaviour. Design:
   `docs/superpowers/specs/2026-08-14-bridge-gui-design.md`.
+- Windowed exe verified building and running on a real Windows PC (2026-08-15).
+  The first build there failed at startup with `No module named 'telemetry'`;
+  the local packages are now named explicitly in `build_exe.bat`, which also
+  refuses to build from an incomplete checkout. The root cause on that machine
+  was never reproduced — a clean build collects all three packages unaided.
