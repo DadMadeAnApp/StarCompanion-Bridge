@@ -6,10 +6,21 @@ Nothing in progress.
 
 ## Next up
 
+- Verify on the Windows PC with a real install (branch `feat/p4k-resolver-keybinds`): p4k read
+  (encrypted-entry flag, entry names; if `global.ini`/`defaultProfile.xml` are encrypted, names and
+  default keybinds are simply unavailable), location-name key variants in `core/localization.py`,
+  `defaultProfile.xml` shape and SC key-name spellings in `core/keybinds.py`.
+
 - Real app icon artwork, replacing the generated placeholder `.ico`.
 - System tray icon / minimize-to-tray (deliberately cut from the GUI work).
 
 ## Done
+
+- Decision 2026-11-17 (owner): encrypted p4k entries are deliberately not read; the p4k reader has
+  no decryption code and raises `P4KError("entry is encrypted; not supported")` for them.
+
+- Built, unverified against a real install: p4k reader, name resolution (`locationName`,
+  notification `@key`), keybind export (`{"type":"keybinds"}`). Tests use synthetic fixtures only.
 
 - WSS/TLS websocket server with mandatory pairing token, QR pairing, cert pinning.
 - Keyboard injection: letters, digits, punctuation via keyboard layout, named

@@ -151,6 +151,43 @@ the app surfaces as its own distinct state rather than an empty list.
 
 ---
 
+## Game data: name resolution and keybind export
+
+Both features read Star Citizen's own files **at runtime, from your install, on your PC**.
+Nothing is bundled with the bridge, written to disk, or sent as a file: only individual
+resolved strings and key bindings cross the socket.
+
+**Name resolution.** On startup the bridge reads `Data/Localization/english/global.ini` out of
+`Data.p4k` (next to `Game.log`) on a background thread. Once loaded, telemetry `context` frames
+gain `"locationName"` (only when the place's display name is found; `location` is always the
+raw code) and `@key` tokens in notification text are replaced. If the p4k can't be read the
+bridge logs it once and keeps sending raw codes.
+
+**Keybind export.** `{"type":"keybinds","id":N}` returns your effective *keyboard* bindings,
+merged from the game's defaults (`Data/Libs/Config/defaultProfile.xml` in the p4k) and your
+`user/client/0/Profiles/<profile>/actionmaps.xml`, translated into the key syntax used by
+`command` messages:
+
+```json
+{"type":"ack","ok":true,"id":N,"keybinds":{"version":1,"channel":"LIVE","profile":"default",
+  "defaultsLoaded":true,"skipped":3,
+  "bindings":[{"actionmap":"spaceship_general","action":"v_toggle_landing_system","key":"N","source":"default"}]}}
+```
+
+`skipped` counts keyboard bindings the bridge cannot press (for example a lone modifier or an
+F13+ key); joystick, gamepad and mouse bindings are left out. If `Data.p4k` is unreadable,
+`defaultsLoaded` is `false` and only your own changes are returned. Errors come back as a
+normal `ok:false` ack with a readable `error`.
+
+**Encrypted p4k entries are deliberately not read** (owner decision, 2026-11-17). If `global.ini`
+or `defaultProfile.xml` turn out to be encrypted on a real install, name resolution and default
+keybinds are simply unavailable: raw codes are sent and `defaultsLoaded` is `false`.
+
+The p4k is read-only and about 100 GB; the bridge reads only its directory and the two files
+it needs, so the first request after a game patch takes a few seconds.
+
+---
+
 ## The bridge window
 
 Launching the bridge opens a window, not a console. It shows:
@@ -209,7 +246,7 @@ Requires Python 3.10 or later — download from [python.org](https://www.python.
 python bridge_server.py
 ```
 
-Dependencies (`websockets`, `pynput`, `cryptography`, `qrcode`) install automatically on first launch.
+Dependencies (`websockets`, `pynput`, `cryptography`, `qrcode`, `zstandard`) install automatically on first launch.
 
 Options:
 

@@ -15,7 +15,7 @@ pair without typing the token by hand.
 # ── Bootstrap: install missing deps, then re-exec so they're importable ───────
 import subprocess, sys, os
 
-_DEPS = ["websockets>=12.0", "pynput>=1.7", "cryptography>=41.0", "qrcode>=7.4"]
+_DEPS = ["websockets>=12.0", "pynput>=1.7", "cryptography>=41.0", "qrcode>=7.4", "zstandard>=0.22"]
 _RETRY_FLAG = "STARCOMPANION_BRIDGE_BOOTSTRAPPED"
 
 def _is_missing(module: str) -> bool:
@@ -64,6 +64,7 @@ import logging
 import secrets
 import socket
 import ssl
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -71,6 +72,8 @@ import websockets
 from pynput.keyboard import Key, KeyCode, Controller
 from pynput.mouse import Button, Controller as MouseController
 
+from core import keybinds as keybind_export
+from core.localization import resolver as name_resolver
 from telemetry.parsers import FeedRouter
 from telemetry.session import TelemetrySession
 from telemetry.tailer import LogTailer, default_log_path
@@ -106,6 +109,74 @@ def _resolve_log_path():
     if not _telemetry_enabled:
         return None
     return _log_path_override or default_log_path()
+
+
+def _game_dir() -> Path | None:
+    """The LIVE (or PTU...) folder holding Game.log, Data.p4k and user\\.
+
+    Independent of the telemetry master switch: that switch silences the log
+    feeds, it does not make the keybind export forget where the game is.
+    """
+    log = _log_path_override or default_log_path()
+    return log.parent if log else None
+
+
+def ensure_name_resolution() -> None:
+    """Point the localization resolver at the current install's Data.p4k.
+
+    Cheap and idempotent (it only reloads when the file changes), and the load
+    itself runs on a background thread, so it is safe to call from anywhere --
+    but the install probe touches the disk, so the event loop calls it via an
+    executor, never directly.
+    """
+    game_dir = _game_dir() if _telemetry_enabled else None
+    p4k_path = None
+    if game_dir is not None:
+        p4k_path = keybind_export.ci_child(game_dir, "Data.p4k")
+    name_resolver.start(p4k_path)
+
+
+def enrich_event(feed: str, event: dict) -> dict:
+    """Add resolved display text to a telemetry event, never replacing raw data.
+
+    `context.location` stays the raw code; `locationName` is added only when it
+    resolves. Notification `@key` tokens are substituted in place. Anything that
+    does not resolve is left exactly as the parser produced it.
+    """
+    if feed == "context" and isinstance(event.get("location"), str):
+        name = name_resolver.resolve_location(event["location"])
+        if name:
+            return {**event, "locationName": name}
+    elif feed == "notification" and isinstance(event.get("text"), str):
+        text = name_resolver.resolve_text(event["text"])
+        if text != event["text"] and text.strip():
+            return {**event, "text": text}
+    return event
+
+
+_keybinds_lock = threading.Lock()
+
+
+def build_keybinds_ack(req_id) -> dict:
+    """Blocking: reads the p4k and the user's actionmaps.xml. Run off the loop.
+
+    Single-flight: concurrent requests serialize here, and the p4k defaults are
+    cached by (size, mtime), so only the first pays for the archive scan.
+    """
+    try:
+        with _keybinds_lock:
+            data = keybind_export.export(
+                _game_dir(), lambda k: _resolve(k)[0] is not None
+            )
+    except keybind_export.KeybindError as exc:
+        return {"type": "ack", "ok": False, "id": req_id, "error": str(exc)}
+    except Exception as exc:  # a parser bug must not kill the connection
+        logging.warning(f"keybind export failed: {exc!r}")
+        return {"type": "ack", "ok": False, "id": req_id, "error": f"keybind export failed: {exc}"}
+    ack = {"type": "ack", "ok": True, "id": req_id, "keybinds": data}
+    if len(json.dumps(ack)) > keybind_export.MAX_ACK_BYTES:
+        return {"type": "ack", "ok": False, "id": req_id, "error": "keybind export too large to send"}
+    return ack
 
 
 def _iso_now() -> str:
@@ -800,7 +871,7 @@ def make_handler(token: str | None):
                         # Build (and thus advance seq) before checking the limiter, so a
                         # dropped frame still burns a sequence number. That's what lets the
                         # client detect the drop purely by observing a gap in seq (§6.3).
-                        frame = session.next_frame(feed, event, ts)
+                        frame = session.next_frame(feed, enrich_event(feed, event), ts)
                         if frame is None:
                             continue
                         if not limiter_out.allow():
@@ -838,6 +909,17 @@ def make_handler(token: str | None):
                     logging.warning(f"Expected a JSON object, got {type(msg).__name__}")
                     continue
 
+                if msg.get("type") == "keybinds":
+                    # Acks are opt-in (HANDOFF §6): a request without an id has
+                    # nowhere to be answered, so do no work for it. The export
+                    # reads a multi-GB archive's directory, so it runs in a
+                    # worker thread and never stalls the event loop.
+                    if msg.get("id") is not None:
+                        task = asyncio.create_task(_run_keybinds(ws, msg["id"]))
+                        pending.add(task)
+                        task.add_done_callback(pending.discard)
+                    continue
+
                 if msg.get("type") in ("subscribe", "unsubscribe"):
                     req_id = msg.get("id", 0)
                     if msg["type"] == "subscribe":
@@ -862,6 +944,9 @@ def make_handler(token: str | None):
                         with contextlib.suppress(Exception):
                             await ws.send(json.dumps(ack))
                         if ack["ok"] and tailer is not None:
+                            asyncio.get_running_loop().run_in_executor(
+                                None, ensure_name_resolution
+                            )
                             # §6.1: report the current gameRunning state right
                             # away. next_frame is a no-op unless this
                             # connection actually subscribed to "context".
@@ -901,6 +986,12 @@ def make_handler(token: str | None):
             logging.info(f"App disconnected  {peer}")
 
     return handle
+
+
+async def _run_keybinds(ws, req_id) -> None:
+    ack = await asyncio.to_thread(build_keybinds_ack, req_id)
+    with contextlib.suppress(Exception):
+        await ws.send(json.dumps(ack))
 
 
 async def _run_command(ws, msg: dict) -> None:
@@ -950,6 +1041,9 @@ async def serve(
     # consumer.
     global _on_clients
     _on_clients = on_clients
+
+    # Fire-and-forget: the install probe and p4k read both happen off the loop.
+    asyncio.get_running_loop().run_in_executor(None, ensure_name_resolution)
 
     ips = _local_ips()
     ssl_ctx, cert_path = _ensure_ssl_context(ips)

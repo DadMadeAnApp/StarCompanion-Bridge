@@ -4,6 +4,17 @@ import types
 
 import pytest
 
+# Import the real zstd package before any test module can stub it.
+# test_bridge_server.py fills sys.modules with empty stand-ins for packages it
+# finds missing, and the p4k tests need the genuine Zstandard code.
+# Where zstandard is not installed at all, register a stand-in so bridge_server's
+# dependency bootstrap does not try to pip-install it mid-test; the zstd-specific
+# tests detect the stand-in (no ZstdCompressor) and skip.
+try:
+    import zstandard  # noqa: F401
+except ImportError:
+    sys.modules["zstandard"] = types.ModuleType("zstandard")
+
 
 def install_pynput_stub_if_needed() -> None:
     """Stub pynput before anything imports bridge_server.

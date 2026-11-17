@@ -12,7 +12,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-python -m pip install --quiet pyinstaller websockets pynput cryptography qrcode
+python -m pip install --quiet pyinstaller websockets pynput cryptography qrcode zstandard
 if errorlevel 1 (
     echo ERROR: pip install failed. Make sure Python 3.10+ is installed.
     pause
@@ -53,6 +53,8 @@ python -m PyInstaller --onefile --windowed --clean --noconfirm ^
     --add-data "assets\bridge.ico;assets" ^
     --hidden-import=pynput.keyboard._win32 ^
     --hidden-import=pynput.mouse._win32 ^
+    --hidden-import=zstandard ^
+    --hidden-import=zstandard.backend_c ^
     --hidden-import=telemetry ^
     --hidden-import=telemetry.parsers ^
     --hidden-import=telemetry.session ^
@@ -61,6 +63,9 @@ python -m PyInstaller --onefile --windowed --clean --noconfirm ^
     --hidden-import=core.autostart ^
     --hidden-import=core.config ^
     --hidden-import=core.events ^
+    --hidden-import=core.keybinds ^
+    --hidden-import=core.localization ^
+    --hidden-import=core.p4k ^
     --hidden-import=core.status ^
     --hidden-import=ui ^
     --hidden-import=ui.app ^
