@@ -1,5 +1,8 @@
 # StarCompanion Bridge — project tracking
 
+Waiting on: David's Windows PC with a real Star Citizen install to verify the p4k, localization and keybind code
+Next action: Verify p4k read, location-name keys and defaultProfile.xml keybinds on Windows (branch feat/p4k-resolver-keybinds)
+
 ## Now
 
 Nothing in progress.
